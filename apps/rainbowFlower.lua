@@ -18,21 +18,21 @@ local conf = {
     InventorySide = sides.right,
     ManaProduced = 0,
     ManaPerDrop = 1200,
-    InventoryOrder = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+    InventoryOrder = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17}
 }
 
 function CheckInventorySlot(colorID)
-    displayAPI.Print(printName, "Getting Inventory Slot: " .. colorID .. "|" .. colors[colorID])
-    stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[colorID +1])
+    displayAPI.Print(printName, "Getting Inventory Slot: " .. conf.InventoryOrder[colorID + 1] .. "|" .. colors[colorID])
+    stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[colorID + 1])
     stackName = ""
     stackAmount = 0
     if stack == nil then
         stackName = "nil"
     else
-        stackName = stack.name
+        stackName = stack.label
         stackAmount = stack.size
     end
-    displayAPI.Write(printName..".InventorySlot."..colors[colorID], "Slot:[" .. colors[colorID] .. "]Item:[" .. stackName .. "]Count:[" .. stackAmount .. "]" )
+    displayAPI.Write(printName..".InventorySlot."..colors[colorID], "Slot:[" .. colors[colorID] .. "]\tItem:[" .. stackName .. "]\tCount:[" .. stackAmount .. "]" )
 
     return stackAmount > 0
 end
@@ -41,9 +41,9 @@ function ReadManaLevel()
     displayAPI.Print(printName, "Getting mana level")
     sig = rs.getInput(conf.SignalInSide)
 
-    displayAPI.Write(printName..".ManaLevel", "Mana level:[" .. ((sig/255.0)*100) .. "]% Cutoff:[" .. conf.StopFill .. "]%" )
+    displayAPI.Write(printName..".ManaLevel", "Mana level:[" .. string.format("%.2f",(sig/15.0)*100) .. "]% Cutoff:[" .. conf.StopFill .. "]%" )
     displayAPI.Write(printName..".ManaProduced", "Mana Produced:[" .. conf.ManaProduced .. "]")
-    return ((sig/255.0)*100) > conf.StopFill
+    return ((sig/15.0)*100) > conf.StopFill
 end
 
 function UpdateCurrentColor()
@@ -53,11 +53,11 @@ end
 
 
 function DropItemAndMoveNext(colorID)
-    displayAPI.Print(printName, "Dropping item for color:[".. color[colorID] .. "] Delay:[" .. conf.RsPulseTime .. "]")
+    displayAPI.Print(printName, "Dropping item for color:[".. colors[colorID] .. "] Delay:[" .. conf.RsPulseTime .. "]")
 
-    rs.setBundleOutput(conf.BundleOutSide, colorID, 255)
+    rs.setBundledOutput(conf.BundleOutSide, colorID, 255)
     os.sleep(conf.RsPulseTime)
-    rs.setBundleOutput(conf.BundleOutSide, colorID, 0)
+    rs.setBundledOutput(conf.BundleOutSide, colorID, 0)
 
     CheckInventorySlot(colorID)
 
@@ -70,7 +70,9 @@ function DropItemAndMoveNext(colorID)
 end
 
 function Startup()
-    configAPI.SetupConfig(confFileName, conf)
+print(confFileName)
+print(conf)    
+configAPI.SetupConfig(confFileName, conf)
     
     UpdateCurrentColor()
     ReadManaLevel()
@@ -101,6 +103,10 @@ function Main()
         
     end
 end
+
+print("test")
+print(configAPI)
+print(displayAPI)
 
 Startup()
 Main()
