@@ -1,2 +1,0 @@
-BasePrograms/miningScript.lua
-BasePrograms/loggerScript.lua
