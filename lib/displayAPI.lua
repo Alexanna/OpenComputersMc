@@ -5,6 +5,10 @@ local width, height = term.getViewport()
 
 local displayAPI = {}
 
+function displayAPI.Clear()
+    return term.clear()
+end
+
 function displayAPI.GetWidth()
     return width
 end
@@ -31,7 +35,5 @@ function displayAPI.Print(name, data)
     term.clearLine()
     term.write(data)
 end
-
-term.clear()
 
 return displayAPI

@@ -75,12 +75,20 @@ function ReadManaLevel()
     displayAPI.Print(printName, "Getting mana level")
     sig = rs.getInput(conf.SignalInSide)
     progress = (sig/15.0)
+    percent = math.ceil(progress*100)
+    spacer = ""
+    
+    if percent < 10 then
+        spacer = "  "
+    elseif percent < 100 then
+        spacer = " "
+    end
 
-    outputText = "Mana [" .. string.format("%.0f",progress*100).."%]\t["
+    outputText = "Mana [" .. spacer .. percent .."%]  ["
     
     maxWidth = displayAPI.GetWidth() - #outputText - 3
-    progressWidth = math.ceil(maxWidth / progress)
-    stopMarker = math.ceil(maxWidth / (conf.StopFill/100))
+    progressWidth = math.ceil(maxWidth * progress)
+    stopMarker = math.ceil(maxWidth * (conf.StopFill/100))
     
     
 
@@ -105,7 +113,7 @@ function ReadManaLevel()
     displayAPI.Write(printName..".ManaLevel", outputText )
     
     --displayAPI.Write(printName..".ManaProduced", "Mana Produced:[" .. conf.ManaProduced .. "]")
-    return (progress*100) > conf.StopFill
+    return percent > conf.StopFill
 end
 
 function UpdateCurrentColor()
@@ -134,9 +142,9 @@ function DropItemAndMoveNext(colorID)
 end
 
 function Startup()
-print(confFileName)
-print(conf)    
-configAPI.SetupConfig(confFileName, conf)
+    configAPI.SetupConfig(confFileName, conf)
+    
+    displayAPI.Clear()
     
     UpdateCurrentColor()
     ReadManaLevel()
@@ -167,10 +175,6 @@ function Main()
         
     end
 end
-
-print("test")
-print(configAPI)
-print(displayAPI)
 
 Startup()
 Main()
