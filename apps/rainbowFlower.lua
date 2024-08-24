@@ -21,18 +21,52 @@ local conf = {
     InventoryOrder = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17}
 }
 
+local colorsNice = {
+    "White    ",
+    "Orange   ",
+    "Magenta  ",
+    "LightBlue",
+    "Yellow   ",
+    "Lime     ",
+    "Pink     ",
+    "Gray     ",
+    "Silver   ",
+    "Cyan     ",
+    "Purple   ",
+    "Blue     ",
+    "Brown    ",
+    "Green    ",
+    "Red      ",
+    "Black    "
+}
+
 function CheckInventorySlot(colorID)
     displayAPI.Print(printName, "Getting Inventory Slot: " .. conf.InventoryOrder[colorID + 1] .. "|" .. colors[colorID])
     stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[colorID + 1])
     stackName = ""
     stackAmount = 0
-    if stack == nil then
-        stackName = "nil"
+    
+
+    outputText = ""
+    
+    if conf.CurrentColor == colorID then
+        outputText = "[*]"
     else
-        stackName = stack.label
-        stackAmount = stack.size
+        outputText = "[ ]"
     end
-    displayAPI.Write(printName..".InventorySlot."..colors[colorID], "Slot:[" .. colors[colorID] .. "]\tItem:[" .. stackName .. "]\tCount:[" .. stackAmount .. "]" )
+    
+    outputText = outputText .. " [ " .. colorsNice[colorID + 1] .. " ] "
+
+    if stack == nil or stack.size <= 0 then
+        outputText = outputText .. "!! Missing item !!"
+    elseif stack.damage ~= colorID then
+        outputText = outputText .. "!! Wrong item " .. stack.label .. " in slot: " .. tostring(conf.InventoryOrder[colorID + 1]) .. " !!"
+    else
+        stackAmount = stack.size
+        outputText = outputText .. "Items left [ " .. tostring(stackAmount) .. " ]"
+    end
+    
+    displayAPI.Write(printName..".InventorySlot."..colors[colorID], outputText )
 
     return stackAmount > 0
 end
@@ -40,15 +74,39 @@ end
 function ReadManaLevel()
     displayAPI.Print(printName, "Getting mana level")
     sig = rs.getInput(conf.SignalInSide)
+    progress = (sig/15.0)
+    maxWidth = displayAPI.GetWidth() - outputText.len() - 3
+    progressWidth = math.ceil(maxWidth / progress)
+    stopMarker = math.ceil(maxWidth / (conf.StopFill/100))
+    
+    outputText = "Mana [" .. string.format("%.0f",progress*100).."%]\t["
 
-    displayAPI.Write(printName..".ManaLevel", "Mana level:[" .. string.format("%.2f",(sig/15.0)*100) .. "]% Cutoff:[" .. conf.StopFill .. "]%" )
-    displayAPI.Write(printName..".ManaProduced", "Mana Produced:[" .. conf.ManaProduced .. "]")
-    return ((sig/15.0)*100) > conf.StopFill
+    for i = 0,  maxWidth do
+        if i < progressWidth then
+            if i == stopMarker then
+                outputText = outputText .. "#"
+            else
+                outputText = outputText .. "■"
+                end
+        else
+            if i == stopMarker then
+                outputText = outputText .. "|"
+            else
+                outputText = outputText .. " "
+            end
+        end
+    end
+
+    outputText = outputText .. "]"
+
+    displayAPI.Write(printName..".ManaLevel", outputText )
+    
+    --displayAPI.Write(printName..".ManaProduced", "Mana Produced:[" .. conf.ManaProduced .. "]")
+    return (progress*100) > conf.StopFill
 end
 
 function UpdateCurrentColor()
     displayAPI.Write(printName..".CurrentColor", "Current Color:[" .. colors[conf.CurrentColor] .. "]")
-
 end
 
 
@@ -59,14 +117,17 @@ function DropItemAndMoveNext(colorID)
     os.sleep(conf.RsPulseTime)
     rs.setBundledOutput(conf.BundleOutSide, colorID, 0)
 
-    CheckInventorySlot(colorID)
-
     conf.ManaProduced = conf.ManaProduced + conf.ManaPerDrop
     conf.CurrentColor = conf.CurrentColor + 1
     if conf.CurrentColor >= 16 then
         conf.CurrentColor = 0
     end
+    
     configAPI.WriteConfFile(confFileName, conf)
+    
+    CheckInventorySlot(colorID)
+
+    CheckInventorySlot(conf.CurrentColor)
 end
 
 function Startup()

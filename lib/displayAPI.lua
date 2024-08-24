@@ -5,6 +5,14 @@ local width, height = term.getViewport()
 
 local displayAPI = {}
 
+function displayAPI.GetWidth()
+    return width
+end
+
+function displayAPI.GetHeight()
+    return height
+end
+
 function displayAPI.Write(name, data)
     local pos = nameToPos[name]
     if pos == nil then
