@@ -87,11 +87,9 @@ function ReadManaLevel()
 
     outputText = "Mana [" .. spacer .. percent .."%]  ["    
     
-    maxWidth = math.ceil(displayAPI.GetWidth() * conf.ManaBarWidth) - #outputText - 3
+    maxWidth = math.ceil(displayAPI.GetWidth() * (conf.ManaBarWidth/100.0)) - #outputText - 3
     progressWidth = math.ceil(maxWidth * progress)
     stopMarker = math.ceil(maxWidth * (conf.StopFill/100))
-    
-    
 
     for i = 0,  maxWidth  do
         if i <= progressWidth then

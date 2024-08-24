@@ -25,8 +25,7 @@ function displayAPI.Write(name, data)
         count = count + 1
     end
     term.setCursor(1,pos)
-    term.write("                                                                                                       ")
-    term.setCursor(1,pos)
+    term.clearLine()
     term.write(data)
 end
 
