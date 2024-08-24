@@ -12,8 +12,8 @@ local conf = {
     CurrentColor = colors.white,
     StopFill = 80,
     ManaBarWidth = 90,
-    MinDropDelay = 1.0,
-    RsPulseTime = 2.0,
+    MinDropDelayMs = 1500,
+    RsPulseTimeMs = 500,
     SignalInSide = sides.front, 
     BundleOutSide = sides.back, 
     InventorySide = sides.right,
@@ -116,10 +116,10 @@ function ReadManaLevel()
 end
 
 function DropItemAndMoveNext(colorID)
-    displayAPI.Print(printName, "Dropping item for color:[".. colors[colorID] .. "] Delay:[" .. conf.RsPulseTime .. "]")
+    displayAPI.Print(printName, "Dropping item for color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
 
     rs.setBundledOutput(conf.BundleOutSide, colorID, 255)
-    os.sleep(conf.RsPulseTime)  
+    os.sleep(conf.RsPulseTimeMs / 1000.0)  
     rs.setBundledOutput(conf.BundleOutSide, colorID, 0)
 
     conf.ManaProduced = conf.ManaProduced + conf.ManaPerDrop
@@ -163,8 +163,8 @@ function Main()
         
         DropItemAndMoveNext(conf.CurrentColor)
 
-        displayAPI.Print(printName, "Waiting on min drop delay:[" .. conf.MinDropDelay .. "]")
-        os.sleep(conf.MinDropDelay)
+        displayAPI.Print(printName, "Waiting on min drop delay Ms:[" .. conf.MinDropDelayMs .. "]")
+        os.sleep(conf.MinDropDelayMs / 1000.0)
         
     end
 end
