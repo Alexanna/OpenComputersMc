@@ -11,8 +11,9 @@ local confFileName = "rainbowConf"
 local conf = {
     CurrentColor = colors.white,
     StopFill = 80,
-    MinDropDelay = 0.9,
-    RsPulseTime = 2.1,
+    ManaBarWidth = 75,
+    MinDropDelay = 1.0,
+    RsPulseTime = 2.0,
     SignalInSide = sides.front, 
     BundleOutSide = sides.back, 
     InventorySide = sides.right,
@@ -84,16 +85,16 @@ function ReadManaLevel()
         spacer = " "
     end
 
-    outputText = "Mana [" .. spacer .. percent .."%]  ["
+    outputText = "Mana [" .. spacer .. percent .."%]  ["    
     
-    maxWidth = displayAPI.GetWidth() - #outputText - 3
+    maxWidth = math.ceil(displayAPI.GetWidth() * conf.ManaBarWidth) - #outputText - 3
     progressWidth = math.ceil(maxWidth * progress)
     stopMarker = math.ceil(maxWidth * (conf.StopFill/100))
     
     
 
-    for i = 0,  maxWidth do
-        if i < progressWidth then
+    for i = 0,  maxWidth  do
+        if i <= progressWidth then
             if i == stopMarker then
                 outputText = outputText .. "#"
             else
@@ -115,11 +116,6 @@ function ReadManaLevel()
     --displayAPI.Write(printName..".ManaProduced", "Mana Produced:[" .. conf.ManaProduced .. "]")
     return percent > conf.StopFill
 end
-
-function UpdateCurrentColor()
-    displayAPI.Write(printName..".CurrentColor", "Current Color:[" .. colors[conf.CurrentColor] .. "]")
-end
-
 
 function DropItemAndMoveNext(colorID)
     displayAPI.Print(printName, "Dropping item for color:[".. colors[colorID] .. "] Delay:[" .. conf.RsPulseTime .. "]")
@@ -146,7 +142,6 @@ function Startup()
     
     displayAPI.Clear()
     
-    UpdateCurrentColor()
     ReadManaLevel()
     
     for i = 0, 15 do
