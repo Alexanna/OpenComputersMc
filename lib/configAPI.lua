@@ -17,6 +17,11 @@ function configAPI.GetInput(displayTest, default)
 
     term.write(displayTest.." [" .. tostring(default) .. "]: ")
     input = term.read()
+
+    if input == nil or #input <= 0 then
+        return default
+    end
+    
     input = string.sub(input,1, -2)
     num = tonumber(input)
     if num ~= nil then

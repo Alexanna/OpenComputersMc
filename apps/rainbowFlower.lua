@@ -11,8 +11,8 @@ local confFileName = "rainbowConf"
 local conf = {
     CurrentColor = colors.white,
     StopFill = 80,
-    MinDropDelay = 1,
-    RsPulseTime = 0.5,
+    MinDropDelay = 0.9,
+    RsPulseTime = 2.1,
     SignalInSide = sides.front, 
     BundleOutSide = sides.back, 
     InventorySide = sides.right,
@@ -75,11 +75,14 @@ function ReadManaLevel()
     displayAPI.Print(printName, "Getting mana level")
     sig = rs.getInput(conf.SignalInSide)
     progress = (sig/15.0)
-    maxWidth = displayAPI.GetWidth() - outputText.len() - 3
+
+    outputText = "Mana [" .. string.format("%.0f",progress*100).."%]\t["
+    
+    maxWidth = displayAPI.GetWidth() - #outputText - 3
     progressWidth = math.ceil(maxWidth / progress)
     stopMarker = math.ceil(maxWidth / (conf.StopFill/100))
     
-    outputText = "Mana [" .. string.format("%.0f",progress*100).."%]\t["
+    
 
     for i = 0,  maxWidth do
         if i < progressWidth then
