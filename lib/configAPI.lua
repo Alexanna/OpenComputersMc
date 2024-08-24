@@ -38,7 +38,7 @@ function configAPI.SetupConfig(confName, args, doConfigure)
         if doConfigure then
             displayAPI.Print(printName, "Writing defaults\n")
             configAPI.WriteConfFile(confName, args)
-            return true
+            return args
         end
         
         displayAPI.Print(printName, "Doing setup now:\n")
@@ -48,10 +48,10 @@ function configAPI.SetupConfig(confName, args, doConfigure)
         end
 
         configAPI.WriteConfFile(confName, args)
-        return true
+        return args
     else
         configAPI.ReadConfFile(confName, args)
-        return false
+        return args
     end
 end
 
@@ -69,6 +69,8 @@ function configAPI.ReadConfFile(confName, args)
         
         confFile:close()
     end
+    
+    return args
 end
 
 function configAPI.WriteConfFile(confName, args)

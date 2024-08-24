@@ -11,7 +11,7 @@ local confFileName = "rainbowConf"
 local conf = {
     CurrentColor = colors.white,
     StopFill = 80,
-    ManaBarWidth = 75,
+    ManaBarWidth = 90,
     MinDropDelay = 1.0,
     RsPulseTime = 2.0,
     SignalInSide = sides.front, 
@@ -119,7 +119,7 @@ function DropItemAndMoveNext(colorID)
     displayAPI.Print(printName, "Dropping item for color:[".. colors[colorID] .. "] Delay:[" .. conf.RsPulseTime .. "]")
 
     rs.setBundledOutput(conf.BundleOutSide, colorID, 255)
-    os.sleep(conf.RsPulseTime)
+    os.sleep(conf.RsPulseTime)  
     rs.setBundledOutput(conf.BundleOutSide, colorID, 0)
 
     conf.ManaProduced = conf.ManaProduced + conf.ManaPerDrop
@@ -136,7 +136,7 @@ function DropItemAndMoveNext(colorID)
 end
 
 function Startup()
-    configAPI.SetupConfig(confFileName, conf)
+    conf = configAPI.SetupConfig(confFileName, conf)
     
     displayAPI.Clear()
     
