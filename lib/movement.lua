@@ -84,7 +84,7 @@ end
 
 function movement.TurnDir(dir)
     
-    display.Print("Want to turn to: " .. directionNames[dir] .. "Current Dir:" .. directionNames[conf.currentDir])
+    display.Print("Want to turn to: " .. directionNames[dir] .. "Current Dir:" .. directionNames[movement.GetDir()])
     --read()
 
     local switch = {
@@ -94,7 +94,7 @@ function movement.TurnDir(dir)
         [sides.west] = sides.south,
     }
 
-    local turnLeft = switch[conf.currentDir] == dir
+    local turnLeft = switch[movement.GetDir()] == dir
     
     while dir ~= conf.currentDir do
         if turnLeft then
@@ -203,8 +203,8 @@ end
 function movement.MoveToPos(targetPos, doDig)
     local dig = doDig or false
 
-    local diffVector =  targetPos - conf.currentPos
-    display.Print("Move To: " .. targetPos:tostring() .. " CurPos: " .. conf.currentPos:tostring() .. " Dif: " .. diffVector:tostring())
+    local diffVector =  targetPos - movement.GetPos()
+    display.Print("Move To: " .. targetPos:tostring() .. " CurPos: " .. movement.GetPos():tostring() .. " Dif: " .. diffVector:tostring())
     --read()
 
     if diffVector.y ~= 0 then
@@ -257,6 +257,22 @@ function movement.GetWaypointRelativePos(label, strength)
     end
 
     debug.LogError("Move get waypoint: " .. label .. " Str: " .. strength, 1)
+end
+
+function movement.GetPos()
+    if conf.useNav then
+        return movement.GetRelativeNavPos()
+    else
+        return conf.currentPos
+    end
+end
+
+function movement.GetDir()
+    if conf.useNav then
+        return navigation.getFacing
+    else
+        return conf.currentDir
+    end
 end
 
 function movement.GetRelativeNavPos()
