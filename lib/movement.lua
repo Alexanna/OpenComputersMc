@@ -18,7 +18,7 @@ local printName = "MovementAPI"
 
 local movement = {}
 
-local conf = {useNav = hasNavigation, homeWaypoint = "Home01", homeWorldPos = vector(), homeNavPos = vector(), homeDir = sides.south, currentPos = vector(), currentDir = sides.north, minEnergy = 10, barWidth = 90}
+local conf = {useNav = hasNavigation, homeWaypoint = "Home01", homeWorldPos = vector(0,0,0), homeNavPos = vector(0,0,0), homeDir = sides.south, currentPos = vector(0,0,0), currentDir = sides.north, minEnergy = 10, barWidth = 90}
 
 local sleepAfterFailedMove = 5
 
@@ -340,7 +340,7 @@ end
 
 conf = config.SetupConfig(confFileName, conf)
 
-if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == vector())  then
+if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == vector(0,0,0))  then
     for i,k in pairs(points) do
         if k.label == conf.homeWaypoint then
             conf.homeNavPos = vector(k.position[1], k.position[2], k.position[3])
