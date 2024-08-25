@@ -3,8 +3,8 @@ local display = require("display")
 local debug = require("debug")
 local sides = require("sides")
 local component = require("component")
-local Vector = require("vector3")
 local robot = require("robot")
+require("vector3")
 
 local movement = {}
 
@@ -31,7 +31,7 @@ local directionNames = {
     [5] = "east"
 }
 
-function WriteConfFile()
+function movement.WriteConfFile()
     conf = config.WriteConfFile(confFileName, conf)
 end
 
@@ -67,8 +67,8 @@ function movement.TurnRight()
     }
     
     conf.currentDir = switch[conf.currentDir]
-    
-    WriteConfFile()
+
+    movement.WriteConfFile()
     movement.UpdateDisplay()
 end
 
@@ -83,8 +83,8 @@ function movement.TurnLeft()
     }
 
     conf.currentDir = switch[conf.currentDir]
-    
-    WriteConfFile()
+
+    movement.WriteConfFile()
     movement.UpdateDisplay()
 end
 
@@ -150,8 +150,8 @@ function movement.MoveForward(distance, doDig)
             conf.currentPos.x = conf.currentPos.x - 1
 
         end
-        
-        WriteConfFile()
+
+        movement.WriteConfFile()
         movement.UpdateDisplay()
     end    
 end
@@ -177,7 +177,7 @@ function movement.MoveUp(distance, doDig)
             moveAttempts = moveAttempts + 1
         end
         conf.currentPos.y = conf.currentPos.y + 1
-        WriteConfFile()
+        movement.WriteConfFile()
     end
 end
 
@@ -202,7 +202,7 @@ function movement.MoveDown(distance, doDig)
             moveAttempts = moveAttempts + 1
         end
         conf.currentPos.y = conf.currentPos.y - 1
-        WriteConfFile()
+        movement.WriteConfFile()
     end
 end
 
@@ -352,6 +352,6 @@ if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == Vector(0,0,0)) 
     conf.currentPos = movement.GetRelativeNavPos()
 end
 
-WriteConfFile()
+movement.WriteConfFile()
 
 return movement
