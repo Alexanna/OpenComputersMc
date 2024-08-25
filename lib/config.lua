@@ -1,60 +1,58 @@
 local filesystem = require("filesystem")
 local json = require("json")
 local serialization = require("serialization")
-
-local displayAPI = require("displayAPI")
-local printName = "ConfigAPI"
+local display = require("displayAPI")
 
 local confPath = "/usr/conf/"
 local confExtension = ".cfg"
 
-local configAPI = {}
+local config = {}
 
-function configAPI.GetInput(displayTest, default)
+function config.GetInput(displayTest, default)
     if type(default) == "table" then
         for i, v in pairs(default) do
-            default[i] = configAPI.GetInput(displayTest .. "[" .. i .. "]", v)
+            default[i] = config.GetInput(displayTest .. "[" .. i .. "]", v)
         end
       return default
     end
 
-    displayAPI.Read(displayTest, default)
+    display.Read(displayTest, default)
 end
 
-function configAPI.SetupConfig(confName, conf, doConfigure, useJson)
+function config.SetupConfig(confName, conf, doConfigure, useJson)
     useJson = useJson or false
 
     if(not filesystem.exists(confPath .. confName .. confExtension)) then
-        displayAPI.Print("Config for '" .. confName .. "' could not be found.\n")
+        display.Print("Config for '" .. confName .. "' could not be found.\n")
 
         if doConfigure then
-            displayAPI.Print("Writing defaults\n")
-            configAPI.WriteConfFile(confName, conf)
+            display.Print("Writing defaults\n")
+            config.WriteConfFile(confName, conf)
             return conf
         end
         
-        displayAPI.Print("Doing setup now:\n")
+        display.Print("Doing setup now:\n")
         
         for k, v in pairs(conf) do
-            conf[k] = configAPI.GetInput(k, v)
+            conf[k] = config.GetInput(k, v)
         end
 
-        configAPI.WriteConfFile(confName, conf, useJson)
+        config.WriteConfFile(confName, conf, useJson)
         return conf
     else    
-        return configAPI.ReadConfFile(confName, conf, useJson)
+        return config.ReadConfFile(confName, conf, useJson)
     end
 end
 
-function configAPI.ReadConfFile(confName, conf, useJson)
+function config.ReadConfFile(confName, conf, useJson)
     useJson = useJson or false
     
-    displayAPI.Print("Reading config: '" .. confName .. "'")
+    display.Print("Reading config: '" .. confName .. "'")
 
     local confFile = io.open(confPath .. confName .. confExtension, "r")
 
     if confFile then
-        displayAPI.Print("Reading File")
+        display.Print("Reading File")
 
         local data = confFile:read("*a")
 
@@ -70,7 +68,7 @@ function configAPI.ReadConfFile(confName, conf, useJson)
     return conf
 end
 
-function configAPI.WriteConfFile(confName, conf, useJson)
+function config.WriteConfFile(confName, conf, useJson)
     useJson = useJson or false
     
     local confFile = io.open(confPath .. confName .. confExtension, "w")
@@ -88,10 +86,10 @@ function configAPI.WriteConfFile(confName, conf, useJson)
         confFile:close()
     end
 
-    displayAPI.Print("Wrote to config: '" .. confName .. "'")
+    display.Print("Wrote to config: '" .. confName .. "'")
 end
 
-function configAPI.WriteLog(confName, text)
+function config.WriteLog(confName, text)
     local confFile = io.open(confPath .. confName .. confExtension, "a")
 
     if confFile then
@@ -105,4 +103,4 @@ if not filesystem.exists(confPath) then
   filesystem.makeDirectory(confPath)
 end
 
-return configAPI
+return config
