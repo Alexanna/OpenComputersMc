@@ -1,7 +1,7 @@
 local filesystem = require("filesystem")
 local json = require("json")
 local serialization = require("serialization")
-local display = require("displayAPI")
+local display = require("display")
 
 local confPath = "/usr/conf/"
 local confExtension = ".cfg"
