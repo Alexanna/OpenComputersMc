@@ -57,9 +57,9 @@ function config.ReadConfFile(confName, conf, useJson)
         local data = confFile:read("*a")
 
         if useJson then
-            conf = json.decode(data)
-        else
             conf = serialization.unserialize(data)
+        else
+            conf = json.decode(data)
         end
         
         confFile:close()
@@ -68,18 +68,18 @@ function config.ReadConfFile(confName, conf, useJson)
     return conf
 end
 
-function config.WriteConfFile(confName, conf, useJson)
-    useJson = useJson or false
+function config.WriteConfFile(confName, conf, useSerialization)
+    useSerialization = useSerialization or false
     
     local confFile = io.open(confPath .. confName .. confExtension, "w")
 
     if confFile then
         local data = ""
         
-        if useJson then
-            data = json.encode(conf)
-        else
+        if useSerialization then
             data = serialization.serialize(conf)
+        else
+            data = json.encode(conf)
         end
         
         confFile:write(data)
@@ -94,7 +94,7 @@ function config.WriteLog(confName, text)
 
     if confFile then
 
-        confFile:write(text)
+        confFile:write(text.. "\r\n")
         confFile:close()
     end
 end
