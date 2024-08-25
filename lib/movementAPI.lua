@@ -1,10 +1,10 @@
 local configAPI = require("configAPI")
 local displayAPI = require("displayAPI")
+local debug = require("debug")
 local sides = require("sides")
 local component = require("component")
 local vector = require("vector")
 local robot = require("robot")
-local computer = require("computer")
 local navigation = component.navigation
 
 local confFileName = "movementConf"
@@ -12,7 +12,7 @@ local printName = "MovementAPI"
 
 local movementAPI = {}
 
-local conf = {homeWaypoint = "Home01", homeWorldPos = vector(), homeNavPos = vector(), homeDir = sides.south, currentPos = vector(), currentDir = sides.north, minEnergy = 10, barWidth = 90}
+local conf = {useNav = true, homeWaypoint = "Home01", homeWorldPos = vector(), homeNavPos = vector(), homeDir = sides.south, currentPos = vector(), currentDir = sides.north, minEnergy = 10, barWidth = 90}
 
 local sleepAfterFailedMove = 5
 
@@ -27,8 +27,15 @@ local directionNames = {
 
 function WriteConfFile()
     conf = configAPI.WriteConfFile(confFileName, conf)
-    
-    displayAPI.Write(printName .. ".HomePos","Home Pos  : " .. conf.homePos:tostring())
+end
+
+function movementAPI.UpdateDisplay()
+    if conf.useNav then
+        displayAPI.Write(printName .. ".HomePos","Home waypoint: " .. conf.homeWaypoint)
+    else
+        displayAPI.Write(printName .. ".HomePos","Home Pos: " .. conf.homePos:tostring())
+    end
+
     displayAPI.Write(printName .. ".CurrentPos","CurrentPos: " .. conf.currentPos:tostring())
     displayAPI.Write(printName .. ".CurrentDir","CurrentDir: " .. directionNames[conf.currentDir])
 end
@@ -56,6 +63,7 @@ function movementAPI.TurnRight()
     conf.currentDir = switch[conf.currentDir]
     
     WriteConfFile()
+    movementAPI.UpdateDisplay()
 end
 
 function movementAPI.TurnLeft()
@@ -71,6 +79,7 @@ function movementAPI.TurnLeft()
     conf.currentDir = switch[conf.currentDir]
     
     WriteConfFile()
+    movementAPI.UpdateDisplay()
 end
 
 function movementAPI.TurnDir(dir)
@@ -135,7 +144,9 @@ function movementAPI.MoveForward(distance, doDig)
             conf.currentPos.x = conf.currentPos.x - 1
 
         end
+        
         WriteConfFile()
+        movementAPI.UpdateDisplay()
     end    
 end
 
@@ -224,9 +235,50 @@ function movementAPI.MoveToPos(targetPos, doDig)
             movementAPI.MoveForward(math.abs(diffVector.z), dig)
         end
     end
+
+    if not movementAPI.CheckPosition() then
+        debug.LogError(string.format("Move fail: nav:%s cur:%s", movementAPI.GetRelativeNavPos():tostring(), conf.currentPos:tostring()))
+        displayAPI.Read()
+    end
+
+    if not movementAPI.CheckDir() then
+        debug.LogError(string.format("Move rotate: nav:%s cur:%s", directionNames[navigation.getFacing()], directionNames[conf.currentDir]))
+        displayAPI.Read()
+    end
 end
 
+function movementAPI.GetWaypointRelativePos(label, strength)
+    local points = navigation.findWaypoints(strength)
 
+    for i,k in pairs(points) do
+        if k.label == label then
+            return vector(k.position[1], k.position[2], k.position[3]) - conf.homeNavPos
+        end
+    end
+
+    debug.LogError("Move get waypoint: " .. label .. " Str: " .. strength, 1)
+end
+
+function movementAPI.GetRelativeNavPos()
+    local x, y, z = navigation.getPosition()
+    if x == nil then
+        debug.LogError("Move get nav pos: " .. y, 1)
+        return conf.currentPos
+    end
+    return vector(x, y, z) - conf.homeNavPos
+end
+
+function movementAPI.CheckPosition()
+    if conf.useNav then
+        return movementAPI.GetRelativeNavPos() == conf.currentPos
+    end
+end
+
+function movementAPI.CheckDir()
+    if conf.useNav then
+        return navigation.getFacing == conf.currentDir
+    end
+end
 
 function movementAPI.GoHome(doDig)
     local dig = doDig or false
@@ -236,15 +288,6 @@ function movementAPI.GoHome(doDig)
     movementAPI.TurnDir(conf.homeDir)
 end
 
-function movementAPI.ShouldHome()
-    return not displayAPI.ProgressBar(printName .. ".Energy", 
-            "Energy: ".. displayAPI.GetPercentageText(computer.energy(), computer.maxEnergy()) .. "% [", 
-            "]", 
-            computer.energy(), 
-            computer.maxEnergy(), 
-            conf.minEnergy, 
-            conf.barWidth )
-end
 
 displayAPI.Print(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west) , 2)
 
@@ -258,5 +301,19 @@ end
 displayAPI.Print(output, 1)
 
 conf = configAPI.SetupConfig(confFileName, conf)
+
+if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == vector())  then
+    for i,k in pairs(points) do
+        if k.label == conf.homeWaypoint then
+            conf.homeNavPos = vector(k.position[1], k.position[2], k.position[3])
+            break
+        end
+    end
+    
+    conf.currentDir = navigation.getFacing()
+    conf.currentPos = movementAPI.GetRelativeNavPos()
+end
+
+WriteConfFile()
 
 return movementAPI
