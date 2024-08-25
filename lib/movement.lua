@@ -32,7 +32,7 @@ local directionNames = {
 }
 
 function movement.WriteConfFile()
-    config.WriteConfFile(confFileName, conf)
+    config.WriteConfFile(confFileName, conf, true)
 end
 
 function movement.UpdateDisplay()
@@ -352,7 +352,7 @@ if hasNavigation then
 end
 
 local firstSetup = false
-conf,  firstSetup = config.SetupConfig(confFileName, conf)
+conf,  firstSetup = config.SetupConfig(confFileName, conf, true, true)
 conf.currentPos = Vector(conf.currentPos.x, conf.currentPos.y, conf.currentPos.z)
 conf.homePos = Vector(conf.homePos.x, conf.homePos.y, conf.homePos.z)
 conf.homeNavOffset = Vector(conf.homeNavOffset.x, conf.homeNavOffset.y, conf.homeNavOffset.z)
