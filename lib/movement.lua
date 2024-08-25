@@ -32,7 +32,7 @@ local directionNames = {
 }
 
 function movement.WriteConfFile()
-    conf = config.WriteConfFile(confFileName, conf)
+    config.WriteConfFile(confFileName, conf)
 end
 
 function movement.UpdateDisplay()
@@ -354,6 +354,9 @@ end
 local defaultWaypoint = conf.homeWaypoint
 local firstSetup = false
 conf,  firstSetup = config.SetupConfig(confFileName, conf)
+conf.currentPos = Vector(conf.currentPos.x, conf.currentPos.y, conf.currentPos.z)
+conf.homePos = Vector(conf.homePos.x, conf.homePos.y, conf.homePos.z)
+conf.homeNavOffset = Vector(conf.homeNavOffset.x, conf.homeNavOffset.y, conf.homeNavOffset.z)
 
 if conf.useNav and firstSetup then
     local points = navigation.findWaypoints(32)
