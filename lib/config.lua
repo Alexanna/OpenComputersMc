@@ -13,14 +13,18 @@ function config.GetInput(displayTest, default)
         for i, v in pairs(default) do
             default[i] = config.GetInput(displayTest .. "[" .. i .. "]", v)
         end
-      return default
+        return default
     end
 
-    display.Read(displayTest, default)
+    local value = display.Read(displayTest, default)
+    
+    display.Print(value)
+    
+    return value
 end
 
-function config.SetupConfig(confName, conf, doConfigure, useJson)
-    useJson = useJson or false
+function config.SetupConfig(confName, conf, doConfigure, useSerialization)
+    useSerialization = useSerialization or false
 
     if(not filesystem.exists(confPath .. confName .. confExtension)) then
         display.Print("Config for '" .. confName .. "' could not be found.\n")
@@ -37,15 +41,15 @@ function config.SetupConfig(confName, conf, doConfigure, useJson)
             conf[k] = config.GetInput(k, v)
         end
 
-        config.WriteConfFile(confName, conf, useJson)
+        config.WriteConfFile(confName, conf, useSerialization)
         return conf
     else    
-        return config.ReadConfFile(confName, conf, useJson)
+        return config.ReadConfFile(confName, conf, useSerialization)
     end
 end
 
-function config.ReadConfFile(confName, conf, useJson)
-    useJson = useJson or false
+function config.ReadConfFile(confName, conf, useSerialization)
+    useSerialization = useSerialization or false
     
     display.Print("Reading config: '" .. confName .. "'")
 
@@ -56,7 +60,7 @@ function config.ReadConfFile(confName, conf, useJson)
 
         local data = confFile:read("*a")
 
-        if useJson then
+        if useSerialization then
             conf = serialization.unserialize(data)
         else
             conf = json.decode(data)
