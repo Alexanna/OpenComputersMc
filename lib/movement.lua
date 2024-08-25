@@ -5,14 +5,20 @@ local sides = require("sides")
 local component = require("component")
 local vector = require("vector")
 local robot = require("robot")
-local navigation = component.navigation
+
+local navigation = {}
+local hasNavigation = false
+if component.isAvailable("navigation") then
+    navigation = component.navigation
+    hasNavigation = true
+end
 
 local confFileName = "movementConf"
 local printName = "MovementAPI"
 
 local movement = {}
 
-local conf = {useNav = true, homeWaypoint = "Home01", homeWorldPos = vector(), homeNavPos = vector(), homeDir = sides.south, currentPos = vector(), currentDir = sides.north, minEnergy = 10, barWidth = 90}
+local conf = {useNav = hasNavigation, homeWaypoint = "Home01", homeWorldPos = vector(), homeNavPos = vector(), homeDir = sides.south, currentPos = vector(), currentDir = sides.north, minEnergy = 10, barWidth = 90}
 
 local sleepAfterFailedMove = 5
 
@@ -248,6 +254,12 @@ function movement.MoveToPos(targetPos, doDig)
 end
 
 function movement.GetWaypointRelativePos(label, strength)
+    if not hasNavigation then
+        debug.LogError("Does not have navigation", 1)
+        return
+    end
+    
+    
     local points = navigation.findWaypoints(strength)
 
     for i,k in pairs(points) do
@@ -276,6 +288,12 @@ function movement.GetDir()
 end
 
 function movement.GetRelativeNavPos()
+
+    if not hasNavigation then
+        debug.LogError("Does not have navigation", 1)
+        return
+    end
+    
     local x, y, z = navigation.getPosition()
     if x == nil then
         debug.LogError("Move get nav pos: " .. y, 1)
@@ -288,12 +306,14 @@ function movement.CheckPosition()
     if conf.useNav then
         return movement.GetRelativeNavPos() == conf.currentPos
     end
+    return true
 end
 
 function movement.CheckDir()
     if conf.useNav then
         return navigation.getFacing == conf.currentDir
     end
+    return true
 end
 
 function movement.GoHome(doDig)
@@ -307,14 +327,16 @@ end
 
 display.Print(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west) , 2)
 
-local points = navigation.findWaypoints(8)
-local output = "WP:"
+if hasNavigation then
+    local points = navigation.findWaypoints(8)
+    local output = "WP:"
 
-for i,k in pairs(points) do
-    output = output .. k.label .. ","
+    for i,k in pairs(points) do
+        output = output .. k.label .. ","
+    end
+
+    display.Print(output, 1)
 end
-
-display.Print(output, 1)
 
 conf = config.SetupConfig(confFileName, conf)
 
