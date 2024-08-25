@@ -3,7 +3,7 @@ local display = require("display")
 local debug = require("debug")
 local sides = require("sides")
 local component = require("component")
-local vector = require("vector")
+local vector = require("vector3")
 local robot = require("robot")
 
 local movement = {}
