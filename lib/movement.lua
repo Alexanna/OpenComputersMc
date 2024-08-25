@@ -263,6 +263,10 @@ function movement.GetWaypointRelativePos(label, strength)
     local points = navigation.findWaypoints(strength)
 
     for i,k in pairs(points) do
+        if i == "n" then
+            break
+        end
+        
         if k.label == label then
             return Vector(k.position[1], k.position[2], k.position[3]) - conf.homeNavPos
         end
@@ -324,14 +328,16 @@ function movement.GoHome(doDig)
     movement.TurnDir(conf.homeDir)
 end
 
-
 display.Print(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west) , 2)
 
 if hasNavigation then
-    local points = navigation.findWaypoints(8)
+    local points = navigation.findWaypoints(32)
     local output = "WP:"
 
     for i,k in pairs(points) do
+        if i == "n" then
+            break
+        end
         output = output .. k.label .. ","
     end
 
@@ -341,7 +347,12 @@ end
 conf = config.SetupConfig(confFileName, conf)
 
 if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == Vector(0,0,0))  then
+    local points = navigation.findWaypoints(32)
     for i,k in pairs(points) do
+        if i == "n" then
+            break
+        end
+        
         if k.label == conf.homeWaypoint then
             conf.homeNavPos = Vector(k.position[1], k.position[2], k.position[3])
             break
