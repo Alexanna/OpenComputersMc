@@ -1,270 +1,262 @@
+local configAPI = require("configAPI")
+local displayAPI = require("displayAPI")
+local sides = require("sides")
+local component = require("component")
+local vector = require("vector")
+local robot = require("robot")
+local computer = require("computer")
+local navigation = component.navigation
+
 local confFileName = "movementConf"
-os.loadAPI("Apis/configAPI.lua")
-os.loadAPI("Apis/refuelAPI.lua")
-os.loadAPI("Apis/displayAPI.lua")
 local printName = "MovementAPI"
 
-dirNorth = 1
-dirEast = 2
-dirSouth = 3
-dirWest = 4
-currentDir = dirNorth
+local movementAPI = {}
 
-currentPos = vector.new(0,0,0)
-homePos = vector.new(0,0,0)
-homeDirection = dirNorth
-sleepAfterFailedMove = 5
-isAtHome = 1
+local conf = {homeWaypoint = "Home01", homeWorldPos = vector(), homeNavPos = vector(), homeDir = sides.south, currentPos = vector(), currentDir = sides.north, minEnergy = 10, barWidth = 90}
 
+local sleepAfterFailedMove = 5
 
-local moveCount = 0
-
-function Refuel()
-    refuelAPI.Refuel()
-end
-
-function GetConfArray() 
-    return {currentDir, "Current Dir: ", currentPos.x,"Current Pos X: ",currentPos.y,"Current Pos Y: ",currentPos.z,"Current Pos Z: ", homePos.x, "Home Pos X: ", homePos.y, "Home Pos Y: ", homePos.z,"Home Pos Z: ", homeDirection, "Home Direction: ", sleepAfterFailedMove, "Sleep After Failed Move: ", isAtHome, "Is At Home: "}
-end
-
-function ApplyConfArray(args)
-    isAtHome = args[19]
-    homePos.x = args[9]
-    homePos.y = args[11]
-    homePos.z = args[13]
-    homeDirection = args[15]
-
-    if isAtHome == 1 then
-        currentDir = homeDirection
-        currentPos.x = homePos.x
-        currentPos.y = homePos.y
-        currentPos.z = homePos.z
-    else
-        currentDir = args[1]
-        currentPos.x = args[3]
-        currentPos.y = args[5]
-        currentPos.z = args[7]
-    end
-    
-    sleepAfterFailedMove = args[17]
-    
-    isAtHome = 0;
-end
+local directionNames = {
+    [0] = "down",
+    [1] = "up",
+    [2] = "north",
+    [3] = "south",
+    [4] = "west",
+    [5] = "east"
+}
 
 function WriteConfFile()
-    configAPI.WriteConfFile(confFileName, GetConfArray())
-    displayAPI.Write(printName .. ".HomePos","Home Pos  : " .. homePos:tostring())
-    displayAPI.Write(printName .. ".CurrentPos","CurrentPos: " .. currentPos:tostring())
-
-    if currentDir == dirNorth then
-        displayAPI.Write(printName .. ".CurrentDir","CurrentDir: " .. "North")
-    elseif currentDir == dirEast then
-        displayAPI.Write(printName .. ".CurrentDir","CurrentPos: " .. "East")
-    elseif currentDir == dirSouth then
-        displayAPI.Write(printName .. ".CurrentDir","CurrentPos: " .. "South")
-    elseif currentDir == dirWest then
-        displayAPI.Write(printName .. ".CurrentDir","CurrentPos: " .. "West")
-    end
+    conf = configAPI.WriteConfFile(confFileName, conf)
+    
+    displayAPI.Write(printName .. ".HomePos","Home Pos  : " .. conf.homePos:tostring())
+    displayAPI.Write(printName .. ".CurrentPos","CurrentPos: " .. conf.currentPos:tostring())
+    displayAPI.Write(printName .. ".CurrentDir","CurrentDir: " .. directionNames[conf.currentDir])
 end
 
-function FixDirection(dir)
-    if dir > 4 then
+function movementAPI.FixDirection(dir)
+    if dir > sides.east then
         dir = dir - 4
-    elseif dir < 1 then
+    elseif dir < sides.north then
         dir = dir + 4
     end
     
     return dir
 end
 
-function Sleep()
-    moveCount = moveCount + 1
-
-    if moveCount % 10 == 0 then
-        sleep(0)
-    end
-end
-
-function TurnRight()
-    turtle.turnRight()
-    currentDir = currentDir + 1
-    currentDir = FixDirection(currentDir)
+function movementAPI.TurnRight()
+    robot.turnRight()
+    
+    local switch = {
+        [sides.north] = sides.east,
+        [sides.east] = sides.south,
+        [sides.south] = sides.west,
+        [sides.west] = sides.north,
+    }
+    
+    conf.currentDir = switch[conf.currentDir]
+    
     WriteConfFile()
-    Sleep()
 end
 
-function TurnLeft()
-    turtle.turnLeft()
-    currentDir = currentDir - 1
-    currentDir = FixDirection(currentDir)
+function movementAPI.TurnLeft()
+    robot.turnLeft()
+    
+    local switch = {
+        [sides.north] = sides.west,
+        [sides.east] = sides.north,
+        [sides.south] = sides.east,
+        [sides.west] = sides.south,
+    }
+
+    conf.currentDir = switch[conf.currentDir]
+    
     WriteConfFile()
-    Sleep()
 end
 
-function TurnDir(dir)
-    dir = FixDirection(dir)
-
-    displayAPI.Print(printName, "Want to turn to: " .. dir .. "Current Dir:" .. currentDir)
+function movementAPI.TurnDir(dir)
+    
+    displayAPI.Print("Want to turn to: " .. directionNames[dir] .. "Current Dir:" .. directionNames[conf.currentDir])
     --read()
 
-    local turnLeft = (dir == FixDirection(currentDir + 3))
+    local switch = {
+        [sides.north] = sides.west,
+        [sides.east] = sides.north,
+        [sides.south] = sides.east,
+        [sides.west] = sides.south,
+    }
 
-    while dir ~= currentDir do
+    local turnLeft = switch[conf.currentDir] == dir
+    
+    while dir ~= conf.currentDir do
         if turnLeft then
-            TurnLeft()
+            movementAPI.TurnLeft()
         else
-            TurnRight()
+            movementAPI.TurnRight()
         end
     end
 end
 
 
-function MoveForward(distance, doDig)
+function movementAPI.MoveForward(distance, doDig)
     local dig = doDig or false
 
-    displayAPI.Print(printName,"Move Forward: " .. distance)
+    displayAPI.Print("Move Forward: " .. distance)
     
     for i = 1, distance do
 
         if dig then
-            turtle.dig()
+            robot.swing()
         end
         
         local moveAttempts = 0
-        while not turtle.forward() do
-            displayAPI.Print(printName,"Could not move forwards" .. moveAttempts)
-            Refuel()
+        while not robot.forward() do
+            displayAPI.Print("Could not move forwards" .. moveAttempts)
 
             if moveAttempts > 1 then
-                sleep(sleepAfterFailedMove)
+                os.sleep(sleepAfterFailedMove)
             end
 
             moveAttempts = moveAttempts + 1
             if dig then
-                turtle.dig()
+                robot.swing()
             end
         end
 
-        if currentDir == dirNorth then
-            currentPos.z = currentPos.z - 1
+        if conf.currentDir == sides.north then
+            conf.currentPos.z = conf.currentPos.z - 1
 
-        elseif currentDir == dirEast then
-            currentPos.x = currentPos.x + 1
+        elseif conf.currentDir == sides.east then
+            conf.currentPos.x = conf.currentPos.x + 1
 
-        elseif currentDir == dirSouth then
-            currentPos.z = currentPos.z + 1
+        elseif conf.currentDir == sides.south then
+            conf.currentPos.z = conf.currentPos.z + 1
 
-        elseif currentDir == dirWest then
-            currentPos.x = currentPos.x - 1
+        elseif conf.currentDir == sides.west then
+            conf.currentPos.x = conf.currentPos.x - 1
 
         end
         WriteConfFile()
-
-        Sleep()
     end    
 end
 
-function MoveUp(distance, doDig)
+function movementAPI.MoveUp(distance, doDig)
     local dig = doDig or false
 
-    displayAPI.Print(printName,"Move Up:" .. distance)
+    displayAPI.Print("Move Up:" .. distance)
     
     for i = 1, distance do
         if dig then
-            turtle.digUp()
+            robot.swingUp()
         end
 
         local moveAttempts = 0
-        while not turtle.up() do
-            displayAPI.Print(printName,"Could not move up" .. moveAttempts)
-            Refuel()
+        while not robot.up() do
+            displayAPI.Print("Could not move up" .. moveAttempts)
 
             if moveAttempts > 1 then
-                sleep(sleepAfterFailedMove)
+                os.sleep(sleepAfterFailedMove)
             end
 
             moveAttempts = moveAttempts + 1
         end
-        currentPos.y = currentPos.y + 1
+        conf.currentPos.y = conf.currentPos.y + 1
         WriteConfFile()
-        Sleep()
-
     end
 end
 
-function MoveDown(distance, doDig)
+function movementAPI.MoveDown(distance, doDig)
     local dig = doDig or false
 
-    displayAPI.Print(printName,"Move Down:", distance)
+    displayAPI.Print("Move Down:", distance)
     for i = 1, distance do
 
         if dig then
-            turtle.digDown()
+            robot.swingDown()
         end
 
         local moveAttempts = 0
-        while not turtle.down() do
-            displayAPI.Print(printName,"Could not move down: " .. moveAttempts)
-            Refuel()
-
+        while not robot.down() do
+            displayAPI.Print("Could not move down: " .. moveAttempts)
+            
             if moveAttempts > 1 then
-                sleep(sleepAfterFailedMove)
+                os.sleep(sleepAfterFailedMove)
             end
 
             moveAttempts = moveAttempts + 1
         end
-        currentPos.y = currentPos.y - 1
+        conf.currentPos.y = conf.currentPos.y - 1
         WriteConfFile()
-        Sleep()
     end
 end
 
-function MoveToPos(targetPos, doDig)
+function movementAPI.MoveToPos(targetPos, doDig)
     local dig = doDig or false
 
-    local diffVector =  targetPos - currentPos
-    displayAPI.Print(printName,"Move To Position: " .. targetPos:tostring() .. " Current Pos: " .. currentPos:tostring() .. " Dif: " .. diffVector:tostring())
+    local diffVector =  targetPos - conf.currentPos
+    displayAPI.Print("Move To: " .. targetPos:tostring() .. " CurPos: " .. conf.currentPos:tostring() .. " Dif: " .. diffVector:tostring())
     --read()
 
     if diffVector.y ~= 0 then
         if diffVector.y > 0 then
-            MoveUp(math.abs(diffVector.y), dig)
+            movementAPI.MoveUp(math.abs(diffVector.y), dig)
         else
-            MoveDown(math.abs(diffVector.y), dig)
+            movementAPI.MoveDown(math.abs(diffVector.y), dig)
         end
     end
     
     if diffVector.x ~= 0 then
 
         if diffVector.x > 0 then
-            TurnDir(dirEast)
-            MoveForward(math.abs(diffVector.x), dig)
+            movementAPI.TurnDir(sides.east)
+            movementAPI.MoveForward(math.abs(diffVector.x), dig)
         else
-            TurnDir(dirWest)
-            MoveForward(math.abs(diffVector.x), dig)
+            movementAPI.TurnDir(sides.west)
+            movementAPI.MoveForward(math.abs(diffVector.x), dig)
         end
     end
 
     if diffVector.z ~= 0 then
         if diffVector.z > 0  then
-            TurnDir(dirSouth)
-            MoveForward(math.abs(diffVector.z), dig)
+            movementAPI.TurnDir(sides.south)
+            movementAPI.MoveForward(math.abs(diffVector.z), dig)
         else
-            TurnDir(dirNorth)
-            MoveForward(math.abs(diffVector.z), dig)
+            movementAPI.TurnDir(sides.north)
+            movementAPI.MoveForward(math.abs(diffVector.z), dig)
         end
     end
 end
 
-function GoHome(doDig)
-local dig = doDig or false
-    displayAPI.Print(printName,"Returning Home")
-    --read()
-    
-    MoveToPos(homePos, dig)
-    TurnDir(homeDirection)
+
+
+function movementAPI.GoHome(doDig)
+    local dig = doDig or false
+    displayAPI.Print("Returning Home")
+
+    movementAPI.MoveToPos(conf.homePos, dig)
+    movementAPI.TurnDir(conf.homeDir)
 end
 
-local confArr = GetConfArray()
-configAPI.SetupConfig(confFileName, confArr)
-ApplyConfArray(confArr)
+function movementAPI.ShouldHome()
+    return not displayAPI.ProgressBar(printName .. ".Energy", 
+            "Energy: ".. displayAPI.GetPercentageText(computer.energy(), computer.maxEnergy()) .. "% [", 
+            "]", 
+            computer.energy(), 
+            computer.maxEnergy(), 
+            conf.minEnergy, 
+            conf.barWidth )
+end
+
+displayAPI.Print(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west) , 2)
+
+local points = navigation.findWaypoints(8)
+local output = "WP:"
+
+for i,k in pairs(points) do
+    output = output .. k.label .. ","
+end
+
+displayAPI.Print(output, 1)
+
+conf = configAPI.SetupConfig(confFileName, conf)
+
+return movementAPI
