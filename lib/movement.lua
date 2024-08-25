@@ -333,12 +333,20 @@ display.PrintLn(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.e
 if hasNavigation then
     local points = navigation.findWaypoints(32)
     local output = "WP:"
+    
+    local first = true
 
     for i,k in pairs(points) do
         if i == "n" then
             break
         end
         output = output .. k.label .. ","
+
+        if first then
+            conf.homeWaypoint = k.label
+            conf.homeNavPos = Vector(k.position[1], k.position[2], k.position[3])
+            first = false
+        end
     end
 
     display.PrintLn(output)
