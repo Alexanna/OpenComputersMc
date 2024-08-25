@@ -3,7 +3,7 @@ local display = require("display")
 local debug = require("debug")
 local sides = require("sides")
 local component = require("component")
-local vector = require("vector3")
+local Vector = require("vector3")
 local robot = require("robot")
 
 local movement = {}
@@ -18,7 +18,7 @@ end
 local confFileName = "movementConf"
 local printName = "MovementAPI"
 
-local conf = {useNav = hasNavigation, homeWaypoint = "Home01", homeWorldPos = vector(0,0,0), homeNavPos = vector(0,0,0), homeDir = sides.south, currentPos = vector(0,0,0), currentDir = sides.north, minEnergy = 10, barWidth = 90}
+local conf = {useNav = hasNavigation, homeWaypoint = "Home01", homeWorldPos = Vector(0,0,0), homeNavPos = Vector(0,0,0), homeDir = sides.south, currentPos = Vector(0,0,0), currentDir = sides.north, minEnergy = 10, barWidth = 90}
 
 local sleepAfterFailedMove = 5
 
@@ -264,7 +264,7 @@ function movement.GetWaypointRelativePos(label, strength)
 
     for i,k in pairs(points) do
         if k.label == label then
-            return vector(k.position[1], k.position[2], k.position[3]) - conf.homeNavPos
+            return Vector(k.position[1], k.position[2], k.position[3]) - conf.homeNavPos
         end
     end
 
@@ -299,7 +299,7 @@ function movement.GetRelativeNavPos()
         debug.LogError("Move get nav pos: " .. y, 1)
         return conf.currentPos
     end
-    return vector(x, y, z) - conf.homeNavPos
+    return Vector(x, y, z) - conf.homeNavPos
 end
 
 function movement.CheckPosition()
@@ -340,10 +340,10 @@ end
 
 conf = config.SetupConfig(confFileName, conf)
 
-if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == vector(0,0,0))  then
+if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == Vector(0,0,0))  then
     for i,k in pairs(points) do
         if k.label == conf.homeWaypoint then
-            conf.homeNavPos = vector(k.position[1], k.position[2], k.position[3])
+            conf.homeNavPos = Vector(k.position[1], k.position[2], k.position[3])
             break
         end
     end
