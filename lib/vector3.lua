@@ -149,7 +149,7 @@ end
 function vecDef:toString(round)
   if round == nil then round = false end
   local x,y,z = self:splitxyz(round)
-  str = "[x="..x..", y="..y..", z="..x.."]"
+  str = "[x="..x..", y="..y..", z="..z.."]"
   return str
 end
 
