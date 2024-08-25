@@ -1,5 +1,5 @@
-local displayAPI = require("displayAPI")
-local configAPI = require("configAPI")
+local display = require("display")
+local config = require("config")
 local colors = require("colors")
 
 local confName = "DebugLog"
@@ -19,10 +19,10 @@ function debug.LogError(text, offset)
 end
 
 function debug.Log(text, offset, fgColor, bgColor)
-    displayAPI.SetColor(fgColor, bgColor)
-    displayAPI.Print(text, offset)
-    displayAPI.ResetColor()
-    configAPI.WriteLog(confName, text)
+    display.SetColor(fgColor, bgColor)
+    display.Print(text, offset)
+    display.ResetColor()
+    config.WriteLog(confName, text)
 end 
 
 return debug
