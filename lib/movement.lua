@@ -18,7 +18,7 @@ end
 local confFileName = "movementConf"
 local printName = "MovementAPI"
 
-local conf = {useNav = hasNavigation, homeWaypoint = "Home01", homeWorldPos = Vector(0,0,0), homeNavPos = Vector(0,0,0), homeDir = sides.south, currentPos = Vector(0,0,0), currentDir = sides.north, minEnergy = 10, barWidth = 90}
+local conf = { useNav = hasNavigation, homeWaypoint = "Home01", homePos = Vector(0,0,0), homeNavOffset = Vector(0,0,0), homeDir = sides.south, currentPos = Vector(0,0,0), currentDir = sides.north, minEnergy = 10, barWidth = 90}
 
 local sleepAfterFailedMove = 5
 
@@ -268,7 +268,7 @@ function movement.GetWaypointRelativePos(label, strength)
         end
         
         if k.label == label then
-            return Vector(k.position[1], k.position[2], k.position[3]) - conf.homeNavPos
+            return Vector(k.position[1], k.position[2], k.position[3]) - conf.homeNavOffset
         end
     end
 
@@ -303,7 +303,7 @@ function movement.GetRelativeNavPos()
         debug.LogError("Move get nav pos: " .. y, 1)
         return conf.currentPos
     end
-    return Vector(x, y, z) - conf.homeNavPos
+    return Vector(x, y, z) - conf.homeNavOffset
 end
 
 function movement.CheckPosition()
@@ -344,7 +344,6 @@ if hasNavigation then
 
         if first then
             conf.homeWaypoint = k.label
-            conf.homeNavPos = Vector(k.position[1], k.position[2], k.position[3])
             first = false
         end
     end
@@ -364,7 +363,8 @@ if conf.useNav and firstSetup then
         end
         
         if k.label == conf.homeWaypoint then
-            conf.homeNavPos = Vector(k.position[1], k.position[2], k.position[3])
+            local x, y, z = navigation.getPosition()
+            conf.homeNavOffset = Vector(k.position[1], k.position[2], k.position[3]) + Vector(x,y,z)
             break
         end
     end
