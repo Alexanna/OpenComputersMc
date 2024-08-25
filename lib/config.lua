@@ -25,13 +25,13 @@ function config.GetInput(displayTest, default)
     return value
 end
 
-function config.SetupConfig(confName, conf, doConfigure, useSerialization)
+function config.SetupConfig(confName, conf, useDefaults, useSerialization)
     useSerialization = useSerialization or false
 
     if(not filesystem.exists(confPath .. confName .. confExtension)) then
         display.PrintLn("Config for '" .. confName .. "' could not be found.")
 
-        if doConfigure then
+        if useDefaults then
             display.PrintLn("Writing defaults")
             config.WriteConfFile(confName, conf)
             return conf, true

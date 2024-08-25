@@ -315,7 +315,7 @@ end
 
 function movement.CheckDir()
     if conf.useNav then
-        return navigation.getFacing == conf.currentDir
+        return navigation.getFacing() == conf.currentDir
     end
     return true
 end
@@ -352,7 +352,7 @@ if hasNavigation then
 end
 
 local firstSetup = false
-conf,  firstSetup = config.SetupConfig(confFileName, conf, true, true)
+conf,  firstSetup = config.SetupConfig(confFileName, conf, false, true)
 conf.currentPos = Vector(conf.currentPos.x, conf.currentPos.y, conf.currentPos.z)
 conf.homePos = Vector(conf.homePos.x, conf.homePos.y, conf.homePos.z)
 conf.homeNavOffset = Vector(conf.homeNavOffset.x, conf.homeNavOffset.y, conf.homeNavOffset.z)
