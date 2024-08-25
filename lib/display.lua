@@ -116,8 +116,6 @@ function display.Read(data, default, offset)
     if input == nil or #input <= 0 or input == "\r" or input == "\n" or input == "\r\n" then
         return default
     end
-
-    term.write("[" .. input .. "] sub:["..string.sub(input,1, -2).."]\r\n")
     
     input = string.sub(input,1, -2)
     

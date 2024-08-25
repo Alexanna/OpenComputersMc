@@ -20,7 +20,7 @@ function config.GetInput(displayTest, default)
 
     local value = display.Read(displayTest, default)
     
-    display.Print("return value: [" ..  tostring(value) .. "]\r\n")
+    display.PrintLn("return value: [" ..  tostring(value) .. "]")
     
     return value
 end
@@ -29,15 +29,15 @@ function config.SetupConfig(confName, conf, doConfigure, useSerialization)
     useSerialization = useSerialization or false
 
     if(not filesystem.exists(confPath .. confName .. confExtension)) then
-        display.Print("Config for '" .. confName .. "' could not be found.\n")
+        display.PrintLn("Config for '" .. confName .. "' could not be found.")
 
         if doConfigure then
-            display.Print("Writing defaults\n")
+            display.PrintLn("Writing defaults")
             config.WriteConfFile(confName, conf)
             return conf
         end
         
-        display.Print("Doing setup now:\n")
+        display.PrintLn("Doing setup now:")
         
         for k, v in pairs(conf) do
             conf[k] = config.GetInput(k, v)

@@ -328,7 +328,7 @@ function movement.GoHome(doDig)
     movement.TurnDir(conf.homeDir)
 end
 
-display.Print(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west) , 2)
+display.PrintLn(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west))
 
 if hasNavigation then
     local points = navigation.findWaypoints(32)
@@ -341,7 +341,7 @@ if hasNavigation then
         output = output .. k.label .. ","
     end
 
-    display.Print(output, 1)
+    display.PrintLn(output)
 end
 
 conf = config.SetupConfig(confFileName, conf)
