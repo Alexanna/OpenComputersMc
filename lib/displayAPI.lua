@@ -1,9 +1,73 @@
 local term = require("term")
+local colors = require("colors")
 local nameToPos = {}
 local count = 1
 local width, height = term.getViewport()
 
+local prevFg = 0
+local prevBg = 0
+
 local displayAPI = {}
+
+local colorIndexToRBG = {
+    [colors.white] = 0xe4e4e4 ,
+    [colors.orange] = 0xea7e35,
+    [colors.magenta] = 0xbe49c9,
+    [colors.lightblue] = 0x6387d2,
+    [colors.yellow] = 0xc2b51c,
+    [colors.lime] = 0x39ba2e,
+    [colors.pink] = 0xd98199,
+    [colors.gray] = 0x414141,
+    [colors.silver] = 0xa0a7a7,
+    [colors.cyan] = 0x267191,
+    [colors.purple] = 0x7e34bf,
+    [colors.blue] = 0x253193,
+    [colors.brown] = 0x56331c,
+    [colors.green] = 0x364b18,
+    [colors.red] = 0x9e2b27,
+    [colors.black] = 0x181414
+}
+
+function displayAPI.SetColor(colorFgIndex, colorBgIndex)
+    if term.gpu().getDepth() == 1 then
+        if colorFgIndex == colors.white then
+            prevFg = term.gpu().setForeground(1)
+        else
+            prevFg = term.gpu().setForeground(0)
+        end
+        if colorBgIndex == colors.white then
+            prevBg = term.gpu().setBackground(1)
+        else
+            prevBg = term.gpu().setBackground(0)
+        end
+    else
+        prevFg = term.gpu().setForeground(colorIndexToRBG[colorFgIndex])
+        prevBg = term.gpu().setBackground(colorIndexToRBG[colorBgIndex])
+    end
+end
+
+function displayAPI.SetColorRGB(colorFg, colorBg)
+    if term.gpu().getDepth() == 1 then
+        if colorFg == 0xFFFFFF then
+            prevFg = term.gpu().setForeground(1)
+        else
+            prevFg = term.gpu().setForeground(0)
+        end
+        if colorBg == 0xFFFFFF then
+            prevBg = term.gpu().setBackground(1)
+        else
+            prevBg = term.gpu().setBackground(0)
+        end
+    else
+        prevFg = term.gpu().setForeground(colorFg)
+        prevBg = term.gpu().setBackground(colorBg)
+    end
+end
+
+function displayAPI.ResetColor()
+    prevFg = term.gpu().setForeground(prevFg)
+    prevBg = term.gpu().setBackground(prevBg)
+end
 
 function displayAPI.Clear()
     return term.clear()
@@ -29,15 +93,44 @@ function displayAPI.Write(name, data)
     term.write(data)
 end
 
+function displayAPI.Read(data, default, offset)
+    if offset == nil then
+        offset = 0
+    end
+
+    if data then
+        term.setCursor(1, height - offset)
+        term.clearLine()
+        if default ~= nil then
+            term.write(data.." [" .. tostring(default) .. "]: ")
+        else
+            term.write(data..": ")
+        end
+    end
+    
+    local input = term.read()
+
+    if input == nil or #input <= 0 then
+        return default
+    end
+
+    input = string.sub(input,1, -2)
+    local num = tonumber(input)
+    if num ~= nil then
+        return num
+    end
+    return input
+end
+
 function displayAPI.Print(data, offset)
     if offset == nil then
         offset = 0
     end
+    
     term.setCursor(1, height - offset)
     term.clearLine()
     term.write(data)
 end
-
 
 function displayAPI.GetPercentageText(currentValue, maxValue)
     local progress = (currentValue/maxValue)
