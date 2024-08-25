@@ -143,7 +143,11 @@ function display.Print(data, offset)
     
     term.setCursor(1, height - offset)
     term.clearLine()
-    term.write(data)
+    term.write(tostring(data))
+end
+
+function display.PrintLn(data, offset)
+    display.Print(tostring(data) .. "\r\n", offset)
 end
 
 function display.GetPercentageText(currentValue, maxValue)
