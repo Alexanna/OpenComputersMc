@@ -153,6 +153,10 @@ function vecDef:toString(round)
   return str
 end
 
+function vecDef:tostring(round)
+  return self:toString(round)
+end
+
 --[[
 
     A quick way to get seperate x/y/z values.
@@ -164,6 +168,18 @@ function vecDef:splitxyz(round)
   else
     return self.x, self.y, self.z
   end
+end
+
+function vecDef:round()
+  return v(math.floor(self.x+0.5), math.floor(self.y+0.5), math.floor(self.z+0.5))
+end
+
+function vecDef:ceil()
+  return v(math.ceil(self.x), math.ceil(self.y), math.ceil(self.z))
+end
+
+function vecDef:floor()
+  return v(math.floor(self.x), math.floor(self.y), math.floor(self.z))
 end
 
 --[[

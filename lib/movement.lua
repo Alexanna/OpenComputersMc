@@ -303,7 +303,7 @@ function movement.GetRelativeNavPos()
         debug.LogError("Move get nav pos: " .. y, 1)
         return conf.currentPos
     end
-    return Vector(x, y, z) - conf.homeNavOffset
+    return (Vector(x,y,z):floor()) - conf.homeNavOffset
 end
 
 function movement.CheckPosition()
@@ -364,7 +364,7 @@ if conf.useNav and firstSetup then
         
         if k.label == conf.homeWaypoint then
             local x, y, z = navigation.getPosition()
-            conf.homeNavOffset = Vector(k.position[1], k.position[2], k.position[3]) + Vector(x,y,z)
+            conf.homeNavOffset = Vector(k.position[1], k.position[2], k.position[3]) + (Vector(x,y,z):floor())
             break
         end
     end
