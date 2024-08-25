@@ -42,7 +42,7 @@ local colorsNice = {
 }
 
 function CheckInventorySlot(colorID)
-    displayAPI.Print(printName, "Getting Inventory Slot: " .. conf.InventoryOrder[colorID + 1] .. "|" .. colors[colorID])
+    displayAPI.Print("Getting Inventory Slot: " .. conf.InventoryOrder[colorID + 1] .. "|" .. colors[colorID])
     stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[colorID + 1])
     stackName = ""
     stackAmount = 0
@@ -73,50 +73,20 @@ function CheckInventorySlot(colorID)
 end
 
 function ReadManaLevel()
-    displayAPI.Print(printName, "Getting mana level")
+    displayAPI.Print("Getting mana level")
     sig = rs.getInput(conf.SignalInSide)
-    progress = (sig/15.0)
-    percent = math.ceil(progress*100)
-    spacer = ""
     
-    if percent < 10 then
-        spacer = "  "
-    elseif percent < 100 then
-        spacer = " "
-    end
-
-    outputText = "Mana [" .. spacer .. percent .."%]  ["    
-    
-    maxWidth = math.ceil(displayAPI.GetWidth() * (conf.ManaBarWidth/100.0)) - #outputText - 3
-    progressWidth = math.ceil(maxWidth * progress)
-    stopMarker = math.ceil(maxWidth * (conf.StopFill/100))
-
-    for i = 0,  maxWidth  do
-        if i <= progressWidth then
-            if i == stopMarker then
-                outputText = outputText .. "#"
-            else
-                outputText = outputText .. "■"
-                end
-        else
-            if i == stopMarker then
-                outputText = outputText .. "|"
-            else
-                outputText = outputText .. " "
-            end
-        end
-    end
-
-    outputText = outputText .. "]"
-
-    displayAPI.Write(printName..".ManaLevel", outputText )
-    
-    --displayAPI.Write(printName..".ManaProduced", "Mana Produced:[" .. conf.ManaProduced .. "]")
-    return percent > conf.StopFill
+    return displayAPI.ProgressBar(printName..".ManaLevel", 
+            "Mana [" .. displayAPI.GetPercentageText(sig, 15.0) .."%]  [", 
+            "]", 
+            sig, 
+            15.0, 
+            conf.StopFill, 
+            conf.ManaBarWidth) 
 end
 
 function DropItemAndMoveNext(colorID)
-    displayAPI.Print(printName, "Dropping item for color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
+    displayAPI.Print("Dropping item for color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
 
     rs.setBundledOutput(conf.BundleOutSide, colorID, 255)
     os.sleep(conf.RsPulseTimeMs / 1000.0)  
@@ -152,18 +122,18 @@ end
 function Main()
     while true do
         while ReadManaLevel() do
-            displayAPI.Print(printName, "Waiting on mana level")
+            displayAPI.Print("Waiting on mana level")
             os.sleep(5)
         end
 
         while not CheckInventorySlot(conf.CurrentColor) do
-            displayAPI.Print(printName, "Waiting on item:[wool:" .. colors[conf.CurrentColor] .. "]")
+            displayAPI.Print("Waiting on item:[wool:" .. colors[conf.CurrentColor] .. "]")
             os.sleep(5)
         end
         
         DropItemAndMoveNext(conf.CurrentColor)
 
-        displayAPI.Print(printName, "Waiting on min drop delay Ms:[" .. conf.MinDropDelayMs .. "]")
+        displayAPI.Print("Waiting on min drop delay Ms:[" .. conf.MinDropDelayMs .. "]")
         os.sleep(conf.MinDropDelayMs / 1000.0)
         
     end
