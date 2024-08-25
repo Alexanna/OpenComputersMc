@@ -1,5 +1,8 @@
 local term = require("term")
 local colors = require("colors")
+
+local displaylib = {}
+
 local nameToPos = {}
 local count = 1
 local width, height = term.getViewport()
@@ -7,7 +10,7 @@ local width, height = term.getViewport()
 local prevFg = 0
 local prevBg = 0
 
-local display = {}
+
 
 local colorIndexToRBG = {
     [colors.white] = 0xe4e4e4 ,
@@ -28,7 +31,7 @@ local colorIndexToRBG = {
     [colors.black] = 0x181414
 }
 
-function display.SetColor(colorFgIndex, colorBgIndex)
+function displaylib.SetColor(colorFgIndex, colorBgIndex)
     if term.gpu().getDepth() == 1 then
         if colorFgIndex == colors.white then
             prevFg = term.gpu().setForeground(1)
@@ -46,7 +49,7 @@ function display.SetColor(colorFgIndex, colorBgIndex)
     end
 end
 
-function display.SetColorRGB(colorFg, colorBg)
+function displaylib.SetColorRGB(colorFg, colorBg)
     if term.gpu().getDepth() == 1 then
         if colorFg == 0xFFFFFF then
             prevFg = term.gpu().setForeground(1)
@@ -64,24 +67,24 @@ function display.SetColorRGB(colorFg, colorBg)
     end
 end
 
-function display.ResetColor()
+function displaylib.ResetColor()
     prevFg = term.gpu().setForeground(prevFg)
     prevBg = term.gpu().setBackground(prevBg)
 end
 
-function display.Clear()
+function displaylib.Clear()
     return term.clear()
 end
 
-function display.GetWidth()
+function displaylib.GetWidth()
     return width
 end
 
-function display.GetHeight()
+function displaylib.GetHeight()
     return height
 end
 
-function display.Write(name, data)
+function displaylib.Write(name, data)
     local pos = nameToPos[name]
     if pos == nil then
         pos = count
@@ -93,7 +96,7 @@ function display.Write(name, data)
     term.write(data)
 end
 
-function display.Read(data, default, offset)
+function displaylib.Read(data, default, offset)
     if offset == nil then
         offset = 0
     end
@@ -133,7 +136,7 @@ function display.Read(data, default, offset)
     return input
 end
 
-function display.Print(data, offset)
+function displaylib.Print(data, offset)
     if offset == nil then
         offset = 0
     end
@@ -143,7 +146,7 @@ function display.Print(data, offset)
     term.write(data)
 end
 
-function display.GetPercentageText(currentValue, maxValue)
+function displaylib.GetPercentageText(currentValue, maxValue)
     local progress = (currentValue/maxValue)
     local percent = math.ceil(progress*100)
     local spacer = ""
@@ -157,18 +160,18 @@ function display.GetPercentageText(currentValue, maxValue)
     return spacer .. percent
 end
 
-function display.ProgressBar(name, frontText, endText, currentValue, maxValue, limitPercent, maxWidthPercent)
-    return display.ProgressBar(name, frontText, endText, currentValue/maxValue, limitPercent/100.0, maxWidthPercent /100.0)
+function displaylib.ProgressBar(name, frontText, endText, currentValue, maxValue, limitPercent, maxWidthPercent)
+    return displaylib.ProgressBar(name, frontText, endText, currentValue/maxValue, limitPercent/100.0, maxWidthPercent /100.0)
 end
 
-function display.ProgressBarDecimal(name, frontText, endText, progressDecimal, limitDecimal, maxWidthDecimal)
+function displaylib.ProgressBarDecimal(name, frontText, endText, progressDecimal, limitDecimal, maxWidthDecimal)
     if limitDecimal == nil then
         limitDecimal = 0
     end
     
     local outputText = frontText
 
-    local maxWidth = math.ceil(display.GetWidth() * maxWidthDecimal) - #frontText - #endText
+    local maxWidth = math.ceil(displaylib.GetWidth() * maxWidthDecimal) - #frontText - #endText
     local progressWidth = math.ceil(maxWidth * progressDecimal)
     local stopMarker = math.ceil(maxWidth * limitDecimal)
 
@@ -190,9 +193,9 @@ function display.ProgressBarDecimal(name, frontText, endText, progressDecimal, l
 
     outputText = outputText .. endText
 
-    display.Write(name, outputText )
+    displaylib.Write(name, outputText )
     
     return progressDecimal >= limitDecimal
 end
 
-return display
+return displaylib
