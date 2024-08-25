@@ -1,5 +1,4 @@
 local filesystem = require("filesystem")
-local term = require("term")
 local json = require("json")
 local serialization = require("serialization")
 
@@ -19,22 +18,10 @@ function configAPI.GetInput(displayTest, default)
       return default
     end
 
-    term.write(displayTest.." [" .. tostring(default) .. "]: ")
-    local input = term.read()
-
-    if input == nil or #input <= 0 then
-        return default
-    end
-    
-    input = string.sub(input,1, -2)
-    local num = tonumber(input)
-    if num ~= nil then
-        return num
-    end
-    return input
+    displayAPI.Read(displayTest, default)
 end
 
-function configAPI.SetupConfig(confName, args, doConfigure, useJson)
+function configAPI.SetupConfig(confName, conf, doConfigure, useJson)
     useJson = useJson or false
 
     if(not filesystem.exists(confPath .. confName .. confExtension)) then
@@ -42,24 +29,24 @@ function configAPI.SetupConfig(confName, args, doConfigure, useJson)
 
         if doConfigure then
             displayAPI.Print("Writing defaults\n")
-            configAPI.WriteConfFile(confName, args)
-            return args
+            configAPI.WriteConfFile(confName, conf)
+            return conf
         end
         
         displayAPI.Print("Doing setup now:\n")
         
-        for k, v in pairs(args) do
-            args[k] = configAPI.GetInput(k, v)
+        for k, v in pairs(conf) do
+            conf[k] = configAPI.GetInput(k, v)
         end
 
-        configAPI.WriteConfFile(confName, args, useJson)
-        return args
+        configAPI.WriteConfFile(confName, conf, useJson)
+        return conf
     else    
-        return configAPI.ReadConfFile(confName, args, useJson)
+        return configAPI.ReadConfFile(confName, conf, useJson)
     end
 end
 
-function configAPI.ReadConfFile(confName, args, useJson)
+function configAPI.ReadConfFile(confName, conf, useJson)
     useJson = useJson or false
     
     displayAPI.Print("Reading config: '" .. confName .. "'")
@@ -72,18 +59,18 @@ function configAPI.ReadConfFile(confName, args, useJson)
         local data = confFile:read("*a")
 
         if useJson then
-            args = json.decode(data)
+            conf = json.decode(data)
         else
-            args = serialization.unserialize(data)
+            conf = serialization.unserialize(data)
         end
         
         confFile:close()
     end
     
-    return args
+    return conf
 end
 
-function configAPI.WriteConfFile(confName, args, useJson)
+function configAPI.WriteConfFile(confName, conf, useJson)
     useJson = useJson or false
     
     local confFile = io.open(confPath .. confName .. confExtension, "w")
@@ -92,9 +79,9 @@ function configAPI.WriteConfFile(confName, args, useJson)
         local data = ""
         
         if useJson then
-            data = json.encode(args)
+            data = json.encode(conf)
         else
-            data = serialization.serialize(args)
+            data = serialization.serialize(conf)
         end
         
         confFile:write(data)
@@ -102,6 +89,16 @@ function configAPI.WriteConfFile(confName, args, useJson)
     end
 
     displayAPI.Print("Wrote to config: '" .. confName .. "'")
+end
+
+function configAPI.WriteLog(confName, text)
+    local confFile = io.open(confPath .. confName .. confExtension, "a")
+
+    if confFile then
+
+        confFile:write(text)
+        confFile:close()
+    end
 end
 
 if not filesystem.exists(confPath) then
