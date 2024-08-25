@@ -1,12 +1,12 @@
-local configlib = require("configlib")
-local displaylib = require("displaylib")
-local debuglib = require("debuglib")
+local config = require("config")
+local display = require("display")
+local debug = require("debug")
 local sides = require("sides")
 local component = require("component")
 local vector = require("vector")
 local robot = require("robot")
 
-local movementlib = {}
+local movement = {}
 
 local navigation = {}
 local hasNavigation = false
@@ -32,21 +32,21 @@ local directionNames = {
 }
 
 function WriteConfFile()
-    conf = configlib.WriteConfFile(confFileName, conf)
+    conf = config.WriteConfFile(confFileName, conf)
 end
 
-function movementlib.UpdateDisplay()
+function movement.UpdateDisplay()
     if conf.useNav then
-        displaylib.Write(printName .. ".HomePos","Home waypoint: " .. conf.homeWaypoint)
+        display.Write(printName .. ".HomePos","Home waypoint: " .. conf.homeWaypoint)
     else
-        displaylib.Write(printName .. ".HomePos","Home Pos: " .. conf.homePos:tostring())
+        display.Write(printName .. ".HomePos","Home Pos: " .. conf.homePos:tostring())
     end
 
-    displaylib.Write(printName .. ".CurrentPos","CurrentPos: " .. conf.currentPos:tostring())
-    displaylib.Write(printName .. ".CurrentDir","CurrentDir: " .. directionNames[conf.currentDir])
+    display.Write(printName .. ".CurrentPos","CurrentPos: " .. conf.currentPos:tostring())
+    display.Write(printName .. ".CurrentDir","CurrentDir: " .. directionNames[conf.currentDir])
 end
 
-function movementlib.FixDirection(dir)
+function movement.FixDirection(dir)
     if dir > sides.east then
         dir = dir - 4
     elseif dir < sides.north then
@@ -56,7 +56,7 @@ function movementlib.FixDirection(dir)
     return dir
 end
 
-function movementlib.TurnRight()
+function movement.TurnRight()
     robot.turnRight()
     
     local switch = {
@@ -69,10 +69,10 @@ function movementlib.TurnRight()
     conf.currentDir = switch[conf.currentDir]
     
     WriteConfFile()
-    movementlib.UpdateDisplay()
+    movement.UpdateDisplay()
 end
 
-function movementlib.TurnLeft()
+function movement.TurnLeft()
     robot.turnLeft()
     
     local switch = {
@@ -85,12 +85,12 @@ function movementlib.TurnLeft()
     conf.currentDir = switch[conf.currentDir]
     
     WriteConfFile()
-    movementlib.UpdateDisplay()
+    movement.UpdateDisplay()
 end
 
-function movementlib.TurnDir(dir)
+function movement.TurnDir(dir)
     
-    displaylib.Print("Want to turn to: " .. directionNames[dir] .. "Current Dir:" .. directionNames[movementlib.GetDir()])
+    display.Print("Want to turn to: " .. directionNames[dir] .. "Current Dir:" .. directionNames[movement.GetDir()])
     --read()
 
     local switch = {
@@ -100,22 +100,22 @@ function movementlib.TurnDir(dir)
         [sides.west] = sides.south,
     }
 
-    local turnLeft = switch[movementlib.GetDir()] == dir
+    local turnLeft = switch[movement.GetDir()] == dir
     
     while dir ~= conf.currentDir do
         if turnLeft then
-            movementlib.TurnLeft()
+            movement.TurnLeft()
         else
-            movementlib.TurnRight()
+            movement.TurnRight()
         end
     end
 end
 
 
-function movementlib.MoveForward(distance, doDig)
+function movement.MoveForward(distance, doDig)
     local dig = doDig or false
 
-    displaylib.Print("Move Forward: " .. distance)
+    display.Print("Move Forward: " .. distance)
     
     for i = 1, distance do
 
@@ -125,7 +125,7 @@ function movementlib.MoveForward(distance, doDig)
         
         local moveAttempts = 0
         while not robot.forward() do
-            displaylib.Print("Could not move forwards" .. moveAttempts)
+            display.Print("Could not move forwards" .. moveAttempts)
 
             if moveAttempts > 1 then
                 os.sleep(sleepAfterFailedMove)
@@ -152,14 +152,14 @@ function movementlib.MoveForward(distance, doDig)
         end
         
         WriteConfFile()
-        movementlib.UpdateDisplay()
+        movement.UpdateDisplay()
     end    
 end
 
-function movementlib.MoveUp(distance, doDig)
+function movement.MoveUp(distance, doDig)
     local dig = doDig or false
 
-    displaylib.Print("Move Up:" .. distance)
+    display.Print("Move Up:" .. distance)
     
     for i = 1, distance do
         if dig then
@@ -168,7 +168,7 @@ function movementlib.MoveUp(distance, doDig)
 
         local moveAttempts = 0
         while not robot.up() do
-            displaylib.Print("Could not move up" .. moveAttempts)
+            display.Print("Could not move up" .. moveAttempts)
 
             if moveAttempts > 1 then
                 os.sleep(sleepAfterFailedMove)
@@ -181,10 +181,10 @@ function movementlib.MoveUp(distance, doDig)
     end
 end
 
-function movementlib.MoveDown(distance, doDig)
+function movement.MoveDown(distance, doDig)
     local dig = doDig or false
 
-    displaylib.Print("Move Down:", distance)
+    display.Print("Move Down:", distance)
     for i = 1, distance do
 
         if dig then
@@ -193,7 +193,7 @@ function movementlib.MoveDown(distance, doDig)
 
         local moveAttempts = 0
         while not robot.down() do
-            displaylib.Print("Could not move down: " .. moveAttempts)
+            display.Print("Could not move down: " .. moveAttempts)
             
             if moveAttempts > 1 then
                 os.sleep(sleepAfterFailedMove)
@@ -206,56 +206,56 @@ function movementlib.MoveDown(distance, doDig)
     end
 end
 
-function movementlib.MoveToPos(targetPos, doDig)
+function movement.MoveToPos(targetPos, doDig)
     local dig = doDig or false
 
-    local diffVector =  targetPos - movementlib.GetPos()
-    displaylib.Print("Move To: " .. targetPos:tostring() .. " CurPos: " .. movementlib.GetPos():tostring() .. " Dif: " .. diffVector:tostring())
+    local diffVector =  targetPos - movement.GetPos()
+    display.Print("Move To: " .. targetPos:tostring() .. " CurPos: " .. movement.GetPos():tostring() .. " Dif: " .. diffVector:tostring())
     --read()
 
     if diffVector.y ~= 0 then
         if diffVector.y > 0 then
-            movementlib.MoveUp(math.abs(diffVector.y), dig)
+            movement.MoveUp(math.abs(diffVector.y), dig)
         else
-            movementlib.MoveDown(math.abs(diffVector.y), dig)
+            movement.MoveDown(math.abs(diffVector.y), dig)
         end
     end
     
     if diffVector.x ~= 0 then
 
         if diffVector.x > 0 then
-            movementlib.TurnDir(sides.east)
-            movementlib.MoveForward(math.abs(diffVector.x), dig)
+            movement.TurnDir(sides.east)
+            movement.MoveForward(math.abs(diffVector.x), dig)
         else
-            movementlib.TurnDir(sides.west)
-            movementlib.MoveForward(math.abs(diffVector.x), dig)
+            movement.TurnDir(sides.west)
+            movement.MoveForward(math.abs(diffVector.x), dig)
         end
     end
 
     if diffVector.z ~= 0 then
         if diffVector.z > 0  then
-            movementlib.TurnDir(sides.south)
-            movementlib.MoveForward(math.abs(diffVector.z), dig)
+            movement.TurnDir(sides.south)
+            movement.MoveForward(math.abs(diffVector.z), dig)
         else
-            movementlib.TurnDir(sides.north)
-            movementlib.MoveForward(math.abs(diffVector.z), dig)
+            movement.TurnDir(sides.north)
+            movement.MoveForward(math.abs(diffVector.z), dig)
         end
     end
 
-    if not movementlib.CheckPosition() then
-        debuglib.LogError(string.format("Move fail: nav:%s cur:%s", movementlib.GetRelativeNavPos():tostring(), conf.currentPos:tostring()))
-        displaylib.Read()
+    if not movement.CheckPosition() then
+        debug.LogError(string.format("Move fail: nav:%s cur:%s", movement.GetRelativeNavPos():tostring(), conf.currentPos:tostring()))
+        display.Read()
     end
 
-    if not movementlib.CheckDir() then
-        debuglib.LogError(string.format("Move rotate: nav:%s cur:%s", directionNames[navigation.getFacing()], directionNames[conf.currentDir]))
-        displaylib.Read()
+    if not movement.CheckDir() then
+        debug.LogError(string.format("Move rotate: nav:%s cur:%s", directionNames[navigation.getFacing()], directionNames[conf.currentDir]))
+        display.Read()
     end
 end
 
-function movementlib.GetWaypointRelativePos(label, strength)
+function movement.GetWaypointRelativePos(label, strength)
     if not hasNavigation then
-        debuglib.LogError("Does not have navigation", 1)
+        debug.LogError("Does not have navigation", 1)
         return
     end
     
@@ -268,18 +268,18 @@ function movementlib.GetWaypointRelativePos(label, strength)
         end
     end
 
-    debuglib.LogError("Move get waypoint: " .. label .. " Str: " .. strength, 1)
+    debug.LogError("Move get waypoint: " .. label .. " Str: " .. strength, 1)
 end
 
-function movementlib.GetPos()
+function movement.GetPos()
     if conf.useNav then
-        return movementlib.GetRelativeNavPos()
+        return movement.GetRelativeNavPos()
     else
         return conf.currentPos
     end
 end
 
-function movementlib.GetDir()
+function movement.GetDir()
     if conf.useNav then
         return navigation.getFacing
     else
@@ -287,45 +287,45 @@ function movementlib.GetDir()
     end
 end
 
-function movementlib.GetRelativeNavPos()
+function movement.GetRelativeNavPos()
 
     if not hasNavigation then
-        debuglib.LogError("Does not have navigation", 1)
+        debug.LogError("Does not have navigation", 1)
         return
     end
     
     local x, y, z = navigation.getPosition()
     if x == nil then
-        debuglib.LogError("Move get nav pos: " .. y, 1)
+        debug.LogError("Move get nav pos: " .. y, 1)
         return conf.currentPos
     end
     return vector(x, y, z) - conf.homeNavPos
 end
 
-function movementlib.CheckPosition()
+function movement.CheckPosition()
     if conf.useNav then
-        return movementlib.GetRelativeNavPos() == conf.currentPos
+        return movement.GetRelativeNavPos() == conf.currentPos
     end
     return true
 end
 
-function movementlib.CheckDir()
+function movement.CheckDir()
     if conf.useNav then
         return navigation.getFacing == conf.currentDir
     end
     return true
 end
 
-function movementlib.GoHome(doDig)
+function movement.GoHome(doDig)
     local dig = doDig or false
-    displaylib.Print("Returning Home")
+    display.Print("Returning Home")
 
-    movementlib.MoveToPos(conf.homePos, dig)
-    movementlib.TurnDir(conf.homeDir)
+    movement.MoveToPos(conf.homePos, dig)
+    movement.TurnDir(conf.homeDir)
 end
 
 
-displaylib.Print(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west) , 2)
+display.Print(string.format("Sides: N:%i E:%i S:%i W:%i", sides.north, sides.east, sides.south, sides.west) , 2)
 
 if hasNavigation then
     local points = navigation.findWaypoints(8)
@@ -335,10 +335,10 @@ if hasNavigation then
         output = output .. k.label .. ","
     end
 
-    displaylib.Print(output, 1)
+    display.Print(output, 1)
 end
 
-conf = configlib.SetupConfig(confFileName, conf)
+conf = config.SetupConfig(confFileName, conf)
 
 if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == vector(0,0,0))  then
     for i,k in pairs(points) do
@@ -349,9 +349,9 @@ if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == vector(0,0,0)) 
     end
     
     conf.currentDir = navigation.getFacing()
-    conf.currentPos = movementlib.GetRelativeNavPos()
+    conf.currentPos = movement.GetRelativeNavPos()
 end
 
 WriteConfFile()
 
-return movementlib
+return movement

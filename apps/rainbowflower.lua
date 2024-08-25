@@ -1,5 +1,5 @@
-local configlib = require("configlib")
-local displaylib = require("displaylib")
+local config = require("config")
+local display = require("display")
 local colors = require("colors")
 local sides = require("sides")
 local component = require("component")
@@ -42,7 +42,7 @@ local colorsNice = {
 }
 
 function CheckInventorySlot(colorID)
-    displaylib.Print("Getting Inventory Slot: " .. conf.InventoryOrder[colorID + 1] .. "|" .. colors[colorID])
+    display.Print("Getting Inventory Slot: " .. conf.InventoryOrder[colorID + 1] .. "|" .. colors[colorID])
     stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[colorID + 1])
     stackName = ""
     stackAmount = 0
@@ -67,17 +67,17 @@ function CheckInventorySlot(colorID)
         outputText = outputText .. "Items left [ " .. tostring(stackAmount) .. " ]"
     end
     
-    displaylib.Write(printName..".InventorySlot."..colors[colorID], outputText )
+    display.Write(printName..".InventorySlot."..colors[colorID], outputText )
 
     return stackAmount > 0
 end
 
 function ReadManaLevel()
-    displaylib.Print("Getting mana level")
+    display.Print("Getting mana level")
     sig = rs.getInput(conf.SignalInSide)
     
-    return displaylib.ProgressBar(printName..".ManaLevel", 
-            "Mana [" .. displaylib.GetPercentageText(sig, 15.0) .."%]  [", 
+    return display.ProgressBar(printName..".ManaLevel", 
+            "Mana [" .. display.GetPercentageText(sig, 15.0) .."%]  [", 
             "]", 
             sig, 
             15.0, 
@@ -86,7 +86,7 @@ function ReadManaLevel()
 end
 
 function DropItemAndMoveNext(colorID)
-    displaylib.Print("Dropping item for color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
+    display.Print("Dropping item for color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
 
     rs.setBundledOutput(conf.BundleOutSide, colorID, 255)
     os.sleep(conf.RsPulseTimeMs / 1000.0)  
@@ -98,7 +98,7 @@ function DropItemAndMoveNext(colorID)
         conf.CurrentColor = 0
     end
     
-    configlib.WriteConfFile(confFileName, conf)
+    config.WriteConfFile(confFileName, conf)
     
     CheckInventorySlot(colorID)
 
@@ -106,9 +106,9 @@ function DropItemAndMoveNext(colorID)
 end
 
 function Startup()
-    conf = configlib.SetupConfig(confFileName, conf)
+    conf = config.SetupConfig(confFileName, conf)
     
-    displaylib.Clear()
+    display.Clear()
     
     ReadManaLevel()
     
@@ -122,18 +122,18 @@ end
 function Main()
     while true do
         while ReadManaLevel() do
-            displaylib.Print("Waiting on mana level")
+            display.Print("Waiting on mana level")
             os.sleep(5)
         end
 
         while not CheckInventorySlot(conf.CurrentColor) do
-            displaylib.Print("Waiting on item:[wool:" .. colors[conf.CurrentColor] .. "]")
+            display.Print("Waiting on item:[wool:" .. colors[conf.CurrentColor] .. "]")
             os.sleep(5)
         end
         
         DropItemAndMoveNext(conf.CurrentColor)
 
-        displaylib.Print("Waiting on min drop delay Ms:[" .. conf.MinDropDelayMs .. "]")
+        display.Print("Waiting on min drop delay Ms:[" .. conf.MinDropDelayMs .. "]")
         os.sleep(conf.MinDropDelayMs / 1000.0)
         
     end

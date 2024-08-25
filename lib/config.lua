@@ -1,64 +1,64 @@
 local filesystem = require("filesystem")
 local json = require("json")
 local serialization = require("serialization")
-local displaylib = require("displaylib")
+local display = require("display")
 
-local configlib = {}
+local config = {}
 
 local confPath = "/usr/conf/"
 local confExtension = ".cfg"
 
 
 
-function configlib.GetInput(displayTest, default)
+function config.GetInput(displayTest, default)
     if type(default) == "table" then
         for i, v in pairs(default) do
-            default[i] = configlib.GetInput(displayTest .. "[" .. i .. "]", v)
+            default[i] = config.GetInput(displayTest .. "[" .. i .. "]", v)
         end
         return default
     end
 
-    local value = displaylib.Read(displayTest, default)
+    local value = display.Read(displayTest, default)
     
-    displaylib.Print(value)
+    display.Print(value)
     
     return value
 end
 
-function configlib.SetupConfig(confName, conf, doConfigure, useSerialization)
+function config.SetupConfig(confName, conf, doConfigure, useSerialization)
     useSerialization = useSerialization or false
 
     if(not filesystem.exists(confPath .. confName .. confExtension)) then
-        displaylib.Print("Config for '" .. confName .. "' could not be found.\n")
+        display.Print("Config for '" .. confName .. "' could not be found.\n")
 
         if doConfigure then
-            displaylib.Print("Writing defaults\n")
-            configlib.WriteConfFile(confName, conf)
+            display.Print("Writing defaults\n")
+            config.WriteConfFile(confName, conf)
             return conf
         end
         
-        displaylib.Print("Doing setup now:\n")
+        display.Print("Doing setup now:\n")
         
         for k, v in pairs(conf) do
-            conf[k] = configlib.GetInput(k, v)
+            conf[k] = config.GetInput(k, v)
         end
 
-        configlib.WriteConfFile(confName, conf, useSerialization)
+        config.WriteConfFile(confName, conf, useSerialization)
         return conf
     else    
-        return configlib.ReadConfFile(confName, conf, useSerialization)
+        return config.ReadConfFile(confName, conf, useSerialization)
     end
 end
 
-function configlib.ReadConfFile(confName, conf, useSerialization)
+function config.ReadConfFile(confName, conf, useSerialization)
     useSerialization = useSerialization or false
     
-    displaylib.Print("Reading config: '" .. confName .. "'")
+    display.Print("Reading config: '" .. confName .. "'")
 
     local confFile = io.open(confPath .. confName .. confExtension, "r")
 
     if confFile then
-        displaylib.Print("Reading File")
+        display.Print("Reading File")
 
         local data = confFile:read("*a")
 
@@ -74,7 +74,7 @@ function configlib.ReadConfFile(confName, conf, useSerialization)
     return conf
 end
 
-function configlib.WriteConfFile(confName, conf, useSerialization)
+function config.WriteConfFile(confName, conf, useSerialization)
     useSerialization = useSerialization or false
     
     local confFile = io.open(confPath .. confName .. confExtension, "w")
@@ -92,10 +92,10 @@ function configlib.WriteConfFile(confName, conf, useSerialization)
         confFile:close()
     end
 
-    displaylib.Print("Wrote to config: '" .. confName .. "'")
+    display.Print("Wrote to config: '" .. confName .. "'")
 end
 
-function configlib.WriteLog(confName, text)
+function config.WriteLog(confName, text)
     local confFile = io.open(confPath .. confName .. confExtension, "a")
 
     if confFile then
@@ -109,4 +109,4 @@ if not filesystem.exists(confPath) then
   filesystem.makeDirectory(confPath)
 end
 
-return configlib
+return config

@@ -1,5 +1,5 @@
-local displaylib = require("displaylib")
-local configlib = require("configlib")
+local display = require("display")
+local config = require("config")
 local colors = require("colors")
 
 local debuglib = {}
@@ -19,10 +19,10 @@ function debuglib.LogError(text, offset)
 end
 
 function debuglib.Log(text, offset, fgColor, bgColor)
-    displaylib.SetColor(fgColor, bgColor)
-    displaylib.Print(text, offset)
-    displaylib.ResetColor()
-    configlib.WriteLog(confName, text)
+    display.SetColor(fgColor, bgColor)
+    display.Print(text, offset)
+    display.ResetColor()
+    config.WriteLog(confName, text)
 end 
 
 return debuglib
