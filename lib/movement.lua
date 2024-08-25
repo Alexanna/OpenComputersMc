@@ -102,7 +102,7 @@ function movement.TurnDir(dir)
 
     local turnLeft = switch[movement.GetDir()] == dir
     
-    while dir ~= conf.currentDir do
+    while dir ~= movement.GetDir() do
         if turnLeft then
             movement.TurnLeft()
         else
@@ -285,7 +285,7 @@ end
 
 function movement.GetDir()
     if conf.useNav then
-        return navigation.getFacing
+        return navigation.getFacing()
     else
         return conf.currentDir
     end
@@ -351,7 +351,6 @@ if hasNavigation then
     display.PrintLn(output)
 end
 
-local defaultWaypoint = conf.homeWaypoint
 local firstSetup = false
 conf,  firstSetup = config.SetupConfig(confFileName, conf)
 conf.currentPos = Vector(conf.currentPos.x, conf.currentPos.y, conf.currentPos.z)
