@@ -117,7 +117,7 @@ function display.Read(data, default, offset)
         return default
     end
 
-    term.write("[" .. input .. "] sub:["..string.sub(input,1, -2).."]")
+    term.write("[" .. input .. "] sub:["..string.sub(input,1, -2).."]\r\n")
     
     input = string.sub(input,1, -2)
     
