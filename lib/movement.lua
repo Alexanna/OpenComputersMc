@@ -206,6 +206,12 @@ function movement.MoveDown(distance, doDig)
     end
 end
 
+
+function movement.MoveToPosRelative(targetPos, doDig)
+    movement.MoveToPos(movement.GetPos() + targetPos, doDig)
+end
+
+
 function movement.MoveToPos(targetPos, doDig)
     local dig = doDig or false
 
