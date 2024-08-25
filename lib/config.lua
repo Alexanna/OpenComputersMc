@@ -34,7 +34,7 @@ function config.SetupConfig(confName, conf, doConfigure, useSerialization)
         if doConfigure then
             display.PrintLn("Writing defaults")
             config.WriteConfFile(confName, conf)
-            return conf
+            return conf, true
         end
         
         display.PrintLn("Doing setup now:")
@@ -44,9 +44,9 @@ function config.SetupConfig(confName, conf, doConfigure, useSerialization)
         end
 
         config.WriteConfFile(confName, conf, useSerialization)
-        return conf
+        return conf, true
     else    
-        return config.ReadConfFile(confName, conf, useSerialization)
+        return config.ReadConfFile(confName, conf, useSerialization), false
     end
 end
 

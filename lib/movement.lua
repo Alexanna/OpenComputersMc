@@ -352,9 +352,11 @@ if hasNavigation then
     display.PrintLn(output)
 end
 
-conf = config.SetupConfig(confFileName, conf)
+local defaultWaypoint = conf.homeWaypoint
+local firstSetup = false
+conf,  firstSetup = config.SetupConfig(confFileName, conf)
 
-if conf.useNav and (conf.homeNavPos == nil or conf.homeNavPos == Vector(0,0,0))  then
+if conf.useNav and firstSetup then
     local points = navigation.findWaypoints(32)
     for i,k in pairs(points) do
         if i == "n" then
