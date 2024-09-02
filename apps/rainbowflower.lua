@@ -3,10 +3,13 @@ local display = require("display")
 local colors = require("colors")
 local sides = require("sides")
 local component = require("component")
+local event = require("event")
 local invCon = component.inventory_controller
 local rs = component.redstone
 local printName = "RainbowFlower"
 local confFileName = "rainbowConf"
+
+local running = true
 
 local conf = {
     CurrentColor = colors.white,
@@ -112,6 +115,8 @@ function Startup()
     
     ReadManaLevel()
     
+    event.register("interrupted", function() running = false end)
+    
     for i = 0, 15 do
         CheckInventorySlot(i)
     end
@@ -120,7 +125,7 @@ end
 
 
 function Main()
-    while true do
+    while running do
         while ReadManaLevel() do
             display.Print("Waiting on mana level")
             os.sleep(5)
