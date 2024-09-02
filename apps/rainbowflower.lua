@@ -101,7 +101,7 @@ function DropItemAndMoveNext(colorID)
         conf.CurrentColor = 0
     end
     
-    config.WriteConfFile(confFileName, conf)
+    config.WriteConfFile(confFileName, conf, true)
     
     CheckInventorySlot(colorID)
 
@@ -115,7 +115,7 @@ end
 
 
 function Startup()
-    conf = config.SetupConfig(confFileName, conf)
+    conf = config.SetupConfig(confFileName, conf, false, true)
     
     display.Clear()
     
