@@ -108,6 +108,12 @@ function DropItemAndMoveNext(colorID)
     CheckInventorySlot(conf.CurrentColor)
 end
 
+function interruptListener()
+    display.PrintLn("interrupted", -1)
+    running = false
+end
+
+
 function Startup()
     conf = config.SetupConfig(confFileName, conf)
     
@@ -115,7 +121,7 @@ function Startup()
     
     ReadManaLevel()
     
-    event.register("interrupted", function() running = false end)
+    event.register("interrupted", interruptListener)
     
     for i = 0, 15 do
         CheckInventorySlot(i)
@@ -126,21 +132,21 @@ end
 
 function Main()
     while running do
-        while ReadManaLevel() do
+        while running and ReadManaLevel() do
             display.Print("Waiting on mana level")
             os.sleep(5)
         end
 
-        while not CheckInventorySlot(conf.CurrentColor) do
+        while running and not CheckInventorySlot(conf.CurrentColor) do
             display.Print("Waiting on item:[wool:" .. colors[conf.CurrentColor] .. "]")
             os.sleep(5)
         end
-        
-        DropItemAndMoveNext(conf.CurrentColor)
 
-        display.Print("Waiting on min drop delay Ms:[" .. conf.MinDropDelayMs .. "]")
-        os.sleep(conf.MinDropDelayMs / 1000.0)
-        
+        if running then
+            DropItemAndMoveNext(conf.CurrentColor)
+            display.Print("Waiting on min drop delay Ms:[" .. conf.MinDropDelayMs .. "]")
+            os.sleep(conf.MinDropDelayMs / 1000.0)
+        end
     end
 end
 
