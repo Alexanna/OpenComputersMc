@@ -163,7 +163,7 @@ function display.GetPercentageText(currentValue, maxValue)
 end
 
 function display.ProgressBar(name, frontText, endText, currentValue, maxValue, limitPercent, maxWidthPercent)
-    return display.ProgressBar(name, frontText, endText, currentValue/maxValue, limitPercent/100.0, maxWidthPercent /100.0)
+    return display.ProgressBarDecimal(name, frontText, endText, currentValue/maxValue, limitPercent/100.0, maxWidthPercent /100.0)
 end
 
 function display.ProgressBarDecimal(name, frontText, endText, progressDecimal, limitDecimal, maxWidthDecimal)
