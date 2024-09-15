@@ -151,15 +151,21 @@ end
 function display.GetPercentageText(currentValue, maxValue)
     local progress = (currentValue/maxValue)
     local percent = math.ceil(progress*100)
-    local spacer = ""
+    
+    return display.GetSpacingForNumber(percent,3) .. percent
+end
 
-    if percent < 10 then
-        spacer = "  "
-    elseif percent < 100 then
-        spacer = " "
+function display.GetSpacingForNumber(value, digits)
+    local outout = ""
+    
+    for i = 0, digits do
+        if i * 10 > value then
+            outout = outout .. " ";
+        end
     end
     
-    return spacer .. percent
+    
+    return outout
 end
 
 function display.ProgressBar(name, frontText, endText, currentValue, maxValue, limitPercent, maxWidthPercent)

@@ -52,7 +52,7 @@ function CheckInventorySlot(colorID)
     local stackAmount, outputText = GetSlotText(colorID,stack)
 
     local sideID = colorID + 8
-    if sideID > colors.Black then
+    if sideID > colors.black then
         sideID = sideID - 16
     end
 
@@ -60,10 +60,10 @@ function CheckInventorySlot(colorID)
     
     local _, outputText2 = GetSlotText(sideID,stack)
 
-    if colorID < sideID then
-        display.Write(printName..".InventorySlot."..colors[colorID], outputText .. " | " .. outputText2)
+    if colorID <= sideID then
+        display.Write(printName..".InventorySlot."..colors[colorID], outputText .. "   |   " .. outputText2)
     else
-        display.Write(printName..".InventorySlot."..colors[sideID], outputText2 .. " | " .. outputText )
+        display.Write(printName..".InventorySlot."..colors[sideID-1], outputText2 .. "   |   " .. outputText )
     end
 
     return stackAmount > 0
@@ -89,7 +89,7 @@ function GetSlotText(colorID, stack)
         outputText = outputText .. "!! Wrong item " .. stack.label .. " in slot: " .. tostring(conf.InventoryOrder[colorID + 1]) .. " !!"
     else
         stackAmount = stack.size
-        outputText = outputText .. " #" .. tostring(stackAmount) .. ""
+        outputText = outputText .. " #" .. display.GetSpacingForNumber(stackAmount, 4) ..tostring(stackAmount) .. ""
     end
     
     return stackAmount, outputText
