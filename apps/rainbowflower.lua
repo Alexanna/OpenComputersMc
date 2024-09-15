@@ -26,40 +26,62 @@ local conf = {
 }
 
 local colorsNice = {
-    "White    ",
-    "Orange   ",
-    "Magenta  ",
-    "LightBlue",
-    "Yellow   ",
-    "Lime     ",
-    "Pink     ",
-    "Gray     ",
-    "Silver   ",
-    "Cyan     ",
-    "Purple   ",
-    "Blue     ",
-    "Brown    ",
-    "Green    ",
-    "Red      ",
-    "Black    "
+    "White  ",
+    "Orange ",
+    "Magenta",
+    "LBlue  ",
+    "Yellow ",
+    "Lime   ",
+    "Pink   ",
+    "Gray   ",
+    "Silver ",
+    "Cyan   ",
+    "Purple ",
+    "Blue   ",
+    "Brown  ",
+    "Green  ",
+    "Red    ",
+    "Black  "
 }
 
 function CheckInventorySlot(colorID)
     display.Print("Getting Inventory Slot: " .. conf.InventoryOrder[colorID + 1] .. "|" .. colors[colorID])
-    stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[colorID + 1])
-    stackName = ""
-    stackAmount = 0
+    local stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[colorID + 1])
     
+    
+    local stackAmount, outputText = GetSlotText(colorID,stack)
 
-    outputText = ""
+    local sideID = colorID + 8
+    if sideID > colors.Black then
+        sideID = sideID - 16
+    end
+
+    stack = invCon.getStackInSlot(conf.InventorySide, conf.InventoryOrder[sideID + 1])
     
+    local _, outputText2 = GetSlotText(sideID,stack)
+
+    if colorID < sideID then
+        display.Write(printName..".InventorySlot."..colors[colorID], outputText .. " | " .. outputText2)
+    else
+        display.Write(printName..".InventorySlot."..colors[sideID], outputText2 .. " | " .. outputText )
+    end
+
+    return stackAmount > 0
+end
+
+function GetSlotText(colorID, stack)
+    local stackName = ""
+    local stackAmount = 0
+    
+    local outputText = ""
+
     if conf.CurrentColor == colorID then
         outputText = "[*]"
     else
         outputText = "[ ]"
     end
-    
-    outputText = outputText .. " [ " .. colorsNice[colorID + 1] .. " ] "
+
+    outputText = outputText .. " " .. colorsNice[colorID + 1] .. ""
 
     if stack == nil or stack.size <= 0 then
         outputText = outputText .. "!! Missing item !!"
@@ -67,17 +89,15 @@ function CheckInventorySlot(colorID)
         outputText = outputText .. "!! Wrong item " .. stack.label .. " in slot: " .. tostring(conf.InventoryOrder[colorID + 1]) .. " !!"
     else
         stackAmount = stack.size
-        outputText = outputText .. "Items left [ " .. tostring(stackAmount) .. " ]"
+        outputText = outputText .. " #" .. tostring(stackAmount) .. ""
     end
     
-    display.Write(printName..".InventorySlot."..colors[colorID], outputText )
-
-    return stackAmount > 0
+    return stackAmount, outputText
 end
 
 function ReadManaLevel()
     display.Print("Getting mana level")
-    sig = rs.getInput(conf.SignalInSide)
+    local sig = rs.getInput(conf.SignalInSide)
     
     return display.ProgressBar(printName..".ManaLevel", 
             "Mana [" .. display.GetPercentageText(sig, 15.0) .."%]  [", 
@@ -92,9 +112,15 @@ function DropItemAndMoveNext(colorID)
     display.Print("Dropping item for color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
 
     rs.setBundledOutput(conf.BundleOutSide, colorID, 255)
-    os.sleep(conf.RsPulseTimeMs / 1000.0)  
+    local startTime = os.time()
+    os.sleep(conf.RsPulseTimeMs / 1000.0)
+    local endTime = os.time()
     rs.setBundledOutput(conf.BundleOutSide, colorID, 0)
 
+    display.Write("TESTING", "Time Diff" .. tostring(os.difftime(startTime, endTime)) .. 
+            " Expected: " .. tostring(conf.RsPulseTimeMs / 1000.0) .. 
+            " Error: " .. tostring((os.difftime(startTime, endTime) - (conf.RsPulseTimeMs / 1000.0))/(conf.RsPulseTimeMs / 1000.0)))
+    
     conf.ManaProduced = conf.ManaProduced + conf.ManaPerDrop
     conf.CurrentColor = conf.CurrentColor + 1
     if conf.CurrentColor >= 16 then
