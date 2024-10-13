@@ -23,6 +23,10 @@ if component.isAvailable("navigation") then
  hasNavigation = true
 end
 
+if component.isAvailable("chunkloader") then
+ component.chunkloader.setActive(true)
+end
+
 local directionNames = { [0] = "down", 
                          [1] = "up", 
                          [2] = "north", 
@@ -64,8 +68,8 @@ end
 
 function SetupConfig()
  --display.Print("",1)
- conf.intersectionPos = movement.GetPos()
- conf.minePos = movement.GetPos()
+ conf.intersectionPos = Vector(movement.GetPos())
+ conf.minePos = Vector(movement.GetPos())
  conf = config.SetupConfig(confFileName, conf, false, true)
  conf.minePos = Vector(conf.minePos.x,conf.minePos.y,conf.minePos.z)
  conf.intersectionPos = Vector(conf.intersectionPos.x,conf.intersectionPos.y,conf.intersectionPos.z)
@@ -265,8 +269,9 @@ function MineSingle()
 
  conf.currentTunnelLength = conf.currentTunnelLength + 1
 
- conf.minePos = movement.GetPos()
-
+ conf.minePos =  movement.GetPos()
+ conf.minePos = Vector(conf.minePos.x, conf.minePos.y, conf.minePos.z)
+ 
  WriteConfFile()
 
  os.sleep(0)
@@ -300,24 +305,26 @@ function GoToNextIntersection()
  --read()
 
  MoveToIntersection()
+ movement.TurnDir(conf.mineDirection)
 
  if conf.currentBranchCount % 2 == 0 then
-  movement.TurnDir(conf.mineDirection)
   MineSingle()
   movement.TurnRight()
  else
   movement.TurnLeft()
  end
 
- conf.intersectionPos = movement.GetPos()
+ conf.intersectionPos = Vector(movement.GetPos())
+ conf.intersectionPos = Vector(conf.intersectionPos.x, conf.intersectionPos.y, conf.intersectionPos.z)
  
  conf.currentBranchCount = conf.currentBranchCount + 1
  conf.currentTunnelLength = 0
+ WriteConfFile()
 
  display.Print("Intersection at: " .. conf.intersectionPos:tostring() .. " branch count: " .. conf.currentBranchCount)
  --read()
 
- WriteConfFile()
+ MineSingle()
 end
 
 function interruptListener()
@@ -338,7 +345,9 @@ function MainLoop()
  GoToMine()
  while running do
   MineTunnel()
-  GoToNextIntersection()
+  if running then
+   GoToNextIntersection()
+  end
  end
 end
 

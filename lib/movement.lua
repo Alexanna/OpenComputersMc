@@ -5,7 +5,10 @@ local sides = require("sides")
 local component = require("component")
 local robot = require("robot")
 local computer = require("computer")
+local event = require("event")
 require("vector3")
+
+local running = true
 
 local movement = {}
 
@@ -102,7 +105,7 @@ function movement.TurnDir(dir)
 
     local turnLeft = switch[movement.GetDir()] == dir
     
-    while dir ~= movement.GetDir() do
+    while running and dir ~= movement.GetDir() do
         if turnLeft then
             movement.TurnLeft()
         else
@@ -119,6 +122,10 @@ function movement.MoveForward(distance, doDig)
     
     for i = 1, distance do
 
+        if not running then
+            break
+        end
+        
         if dig then
             robot.swing()
         end
@@ -153,7 +160,7 @@ function movement.MoveForward(distance, doDig)
 
         movement.WriteConfFile()
         movement.UpdateDisplay()
-    end    
+    end
 end
 
 function movement.MoveUp(distance, doDig)
@@ -162,6 +169,10 @@ function movement.MoveUp(distance, doDig)
     display.Print("Move Up:" .. distance)
     
     for i = 1, distance do
+        if not running then
+            break
+        end
+        
         if dig then
             robot.swingUp()
         end
@@ -186,7 +197,11 @@ function movement.MoveDown(distance, doDig)
 
     display.Print("Move Down:", distance)
     for i = 1, distance do
-
+        if not running then
+            break
+        end
+        
+        
         if dig then
             robot.swingDown()
         end
@@ -216,15 +231,8 @@ function movement.MoveToPos(targetPos, doDig)
     local dig = doDig or false
 
     local diffVector =  targetPos - movement.GetPos()
-    display.Print(movement.GetPos())
-    display.Print(diffVector)
-    display.Print(targetPos)
     
-    local print = "Move To: "
-    print = print .. targetPos:toString()
-    print = print .. " CurPos: "
-    print = print .. movement.GetPos():toString()
-    print = print .. " Dif: "
+    local print = "Move Dif: "
     print = print ..  diffVector:toString()
     display.Print(print)
     --read()
@@ -374,6 +382,14 @@ if hasNavigation then
 
     display.PrintLn(output)
 end
+
+
+function interruptListener()
+    display.PrintLn("interrupted", -1)
+    running = false
+end
+event.register("interrupted", interruptListener)
+
 
 local firstSetup = false
 conf,  firstSetup = config.SetupConfig(confFileName, conf, false, true)
