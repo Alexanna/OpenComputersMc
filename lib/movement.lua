@@ -4,6 +4,7 @@ local debug = require("debug")
 local sides = require("sides")
 local component = require("component")
 local robot = require("robot")
+local computer = require("computer")
 require("vector3")
 
 local movement = {}
@@ -285,7 +286,7 @@ function movement.GetPos()
     if conf.useNav then
         return movement.GetRelativeNavPos()
     else
-        return conf.currentPos
+        return Vector(conf.currentPos.x, conf.currentPos.y, conf.currentPos.z) 
     end
 end
 
@@ -324,6 +325,10 @@ function movement.CheckDir()
         return navigation.getFacing() == conf.currentDir
     end
     return true
+end
+
+function movement.EnergyPercent()
+    return (computer.energy()/computer.maxEnergy()) * 100
 end
 
 function movement.GoHome(doDig)

@@ -14,6 +14,7 @@ conf = config.SetupConfig(confFileName, conf, false, true)
 
 display.PrintLn("Open port: " .. conf.port)
 modem.open(conf.port)
+modem.setStrength(conf.distance)    
 
 local running = true
 

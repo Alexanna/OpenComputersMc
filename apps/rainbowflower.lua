@@ -61,9 +61,9 @@ function CheckInventorySlot(colorID)
     local _, outputText2 = GetSlotText(sideID,stack)
 
     if colorID <= sideID then
-        display.Write(printName..".InventorySlot."..colors[colorID], outputText .. "   |   " .. outputText2)
+        display.Write(printName..".InventorySlot."..colors[colorID], outputText .. " \t|   " .. outputText2)
     else
-        display.Write(printName..".InventorySlot."..colors[sideID-1], outputText2 .. "   |   " .. outputText )
+        display.Write(printName..".InventorySlot."..colors[sideID-1], outputText2 .. " \t|   " .. outputText )
     end
 
     return stackAmount > 0
@@ -109,18 +109,12 @@ function ReadManaLevel()
 end
 
 function DropItemAndMoveNext(colorID)
-    display.Print("Dropping item for color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
+    display.Print("Dropping color:[".. colors[colorID] .. "] Delay Ms:[" .. conf.RsPulseTimeMs .. "]")
 
     rs.setBundledOutput(conf.BundleOutSide, colorID, 255)
-    local startTime = os.time()
     os.sleep(conf.RsPulseTimeMs / 1000.0)
-    local endTime = os.time()
     rs.setBundledOutput(conf.BundleOutSide, colorID, 0)
 
-    display.Write("TESTING", "Time Diff" .. tostring(os.difftime(startTime, endTime)) .. 
-            " Expected: " .. tostring(conf.RsPulseTimeMs / 1000.0) .. 
-            " Error: " .. tostring((os.difftime(startTime, endTime) - (conf.RsPulseTimeMs / 1000.0))/(conf.RsPulseTimeMs / 1000.0)))
-    
     conf.ManaProduced = conf.ManaProduced + conf.ManaPerDrop
     conf.CurrentColor = conf.CurrentColor + 1
     if conf.CurrentColor >= 16 then

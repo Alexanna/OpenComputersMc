@@ -7,9 +7,11 @@ local modem = component.modem
 local printName = "wifiEcho"
 local confFileName = "wifiEcho"
 
-local conf = {ports = {1}}
+local conf = {ports = {1}, distance = 32}
 
 conf = config.SetupConfig(confFileName, conf, false, true)
+
+modem.setStrength(conf.distance)
 
 for port in conf.ports do
     display.PrintLn("Open port: " .. port)

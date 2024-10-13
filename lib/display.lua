@@ -147,6 +147,7 @@ end
 function display.PrintLn(data, offset)
     display.Print(tostring(data) .. "\r\n", offset)
 end
+output = output .. " ";
 
 function display.GetPercentageText(currentValue, maxValue)
     local progress = (currentValue/maxValue)
@@ -156,16 +157,15 @@ function display.GetPercentageText(currentValue, maxValue)
 end
 
 function display.GetSpacingForNumber(value, digits)
-    local outout = ""
+    local output = ""
     
     for i = 0, digits do
-        if i * 10 > value then
-            outout = outout .. " ";
+        if value < (10 ^ i) then
         end
     end
     
     
-    return outout
+    return output
 end
 
 function display.ProgressBar(name, frontText, endText, currentValue, maxValue, limitPercent, maxWidthPercent)
