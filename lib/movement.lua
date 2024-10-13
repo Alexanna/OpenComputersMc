@@ -40,10 +40,10 @@ function movement.UpdateDisplay()
     if conf.useNav then
         display.Write(printName .. ".HomePos","Home waypoint: " .. conf.homeWaypoint)
     else
-        display.Write(printName .. ".HomePos","Home Pos: " .. conf.homePos:tostring())
+        display.Write(printName .. ".HomePos","Home Pos: " .. conf.homePos:toString())
     end
 
-    display.Write(printName .. ".CurrentPos","CurrentPos: " .. conf.currentPos:tostring())
+    display.Write(printName .. ".CurrentPos","CurrentPos: " .. conf.currentPos:toString())
     display.Write(printName .. ".CurrentDir","CurrentDir: " .. directionNames[conf.currentDir])
 end
 
@@ -217,7 +217,7 @@ function movement.MoveToPos(targetPos, doDig)
     local dig = doDig or false
 
     local diffVector =  targetPos - movement.GetPos()
-    display.Print("Move To: " .. targetPos:tostring() .. " CurPos: " .. movement.GetPos():tostring() .. " Dif: " .. diffVector:tostring())
+    display.Print("Move To: " .. targetPos:toString() .. " CurPos: " .. movement.GetPos():toString() .. " Dif: " .. diffVector:toString())
     --read()
 
     if diffVector.y ~= 0 then
@@ -250,7 +250,7 @@ function movement.MoveToPos(targetPos, doDig)
     end
 
     if not movement.CheckPosition() then
-        debug.LogError(string.format("Move fail: nav:%s cur:%s", movement.GetRelativeNavPos():tostring(), conf.currentPos:tostring()))
+        debug.LogError(string.format("Move fail: nav:%s cur:%s", movement.GetRelativeNavPos():toString(), conf.currentPos:toString()))
         display.Read()
     end
 

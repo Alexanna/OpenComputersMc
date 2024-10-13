@@ -54,14 +54,16 @@ function UpdateStateText(state)
 end
 
 function WriteConfFile()
- config.WriteConfFile(confFileName, conf)
+ config.WriteConfFile(confFileName, conf, true)
  display.ProgressBarDecimal(printName .. ".Length","Mine Length: [" .. conf.currentTunnelLength:tostring() .. "]", "", conf.currentTunnelLength/conf.desiredTunnelLength, 0, conf.barWidth)
  display.Write(printName .. ".BranchCount","Branch Count: " .. conf.currentBranchCount)
 end
 
 function SetupConfig()
  --display.Print("",1)
- conf = configAPI.SetupConfig(confFileName, conf, false, true)
+ conf.intersectionPos = movement.GetPos()
+ conf.minePos = movement.GetPos()
+ conf = config.SetupConfig(confFileName, conf, false, true)
 end
 
 function Torch()
@@ -219,7 +221,7 @@ function MoveHome()
   os.sleep(0)
  until robot.count() > 1
 
- turtle.select(1)
+ robot.select(1)
 
  while movement.EnergyPercent() < 95 do
   UpdateStateText("Charging: " .. movement.EnergyPercent())
