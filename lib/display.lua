@@ -147,7 +147,6 @@ end
 function display.PrintLn(data, offset)
     display.Print(tostring(data) .. "\r\n", offset)
 end
-output = output .. " ";
 
 function display.GetPercentageText(currentValue, maxValue)
     local progress = (currentValue/maxValue)

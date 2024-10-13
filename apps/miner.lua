@@ -182,7 +182,7 @@ function EmptyInventory()
   robot.select(slot)
   if robot.count() > 0 then
    while not DropDir(conf.dropChestDirection) do
-    display.Print(printName, "Storage Full")
+    display.Print("Storage Full")
     os.sleep(10)
    end
   end
@@ -235,7 +235,7 @@ function GoToMine()
  conf.currentState = stateEnum.GoMine
  WriteConfFile()
 
- display.Print(printName, "Heading to Mine")
+ display.Print( "Heading to Mine")
  --read()
  MoveToIntersection()
 
@@ -245,7 +245,7 @@ end
 
 function MineSingle()
  UpdateStateText("Digging")
- display.Print(printName, "Do Dig")
+ display.Print("Do Dig")
 
  conf.currentState = stateEnum.Mining
  
@@ -265,7 +265,7 @@ function MineSingle()
 end
 
 function MineTunnel()
- display.Print(printName, "Start tunnel")
+ display.Print( "Start tunnel")
  --read()
  
  while conf.currentTunnelLength < conf.desiredTunnelLength do
@@ -273,7 +273,7 @@ function MineTunnel()
   MineSingle()
   
   if IsInventoryFull() or robot.count(conf.torchSlot) <= 1 then
-   display.Print(printName, "Inventory is full")
+   display.Print("Inventory is full")
    
    MoveHome()
    
@@ -282,13 +282,13 @@ function MineTunnel()
   
  end
  
- display.Print(printName, "Finished Mining: ".. conf.currentTunnelLength .. " Pos: " .. conf.minePos:tostring())
+ display.Print("Finished Mining: ".. conf.currentTunnelLength .. " Pos: " .. conf.minePos:tostring())
  --read()
 end
 
 function GoToNextIntersection()
  UpdateStateText("Going to next branch")
- display.Print(printName, "Moving to next intersection")
+ display.Print("Moving to next intersection")
  --read()
 
  MoveToIntersection()
@@ -306,7 +306,7 @@ function GoToNextIntersection()
  conf.currentBranchCount = conf.currentBranchCount + 1
  conf.currentTunnelLength = 0
 
- display.Print(printName, "Intersection at: " .. conf.intersectionPos:tostring() .. " branch count: " .. conf.currentBranchCount)
+ display.Print("Intersection at: " .. conf.intersectionPos:tostring() .. " branch count: " .. conf.currentBranchCount)
  --read()
 
  WriteConfFile()
@@ -314,11 +314,11 @@ end
 
 function MainLoop()
  UpdateStateText("Bootup")
- display.Print(printName, "Started Main Loop!")
+ display.Print("Started Main Loop!")
 
  SetupConfig()
 
- display.Print(printName, "Ready")
+ display.Print("Ready")
  MoveHome()
  GoToMine()
  while true do
