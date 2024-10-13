@@ -105,6 +105,40 @@ function vecDef:dist(b)
   return math.sqrt((b.x-self.x)^2+(b.y-self.y)^2+(b.z-self.z)^2), v(b.x-self.x, b.y-self.y, b.z-self.z)
 end
 
+function vecDef:distSqr(b)
+  if type(self) ~= "table" or type(self) ~= "table" or getmetatable(self) ~= vec then
+    return 0, v()
+  else
+    if self.x == nil then
+      return 0, v()
+    end
+  end
+  return ((b.x-self.x)^2+(b.y-self.y)^2+(b.z-self.z)^2), v(b.x-self.x, b.y-self.y, b.z-self.z)
+end
+
+
+function vecDef:magnitude()
+  if type(self) ~= "table" or type(self) ~= "table" or getmetatable(self) ~= vec then
+    return 0, v()
+  else
+    if self.x == nil then
+      return 0, v()
+    end
+  end
+  return math.sqrt((self.x)^2+(self.y)^2+(self.z)^2), v(self.x, self.y, self.z)
+end
+
+function vecDef:magnitudeSquared()
+  if type(self) ~= "table" or type(self) ~= "table" or getmetatable(self) ~= vec then
+    return 0, v()
+  else
+    if self.x == nil then
+      return 0, v()
+    end
+  end
+  return ((self.x)^2+(self.y)^2+(self.z)^2), v(self.x, self.y, self.z)
+end
+
 --[[
 
     Simple bounds checking function.

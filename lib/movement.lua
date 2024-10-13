@@ -90,8 +90,7 @@ function movement.TurnLeft()
 end
 
 function movement.TurnDir(dir)
-    
-    display.Print("Want to turn to: " .. directionNames[dir] .. "Current Dir:" .. directionNames[movement.GetDir()])
+    display.Print( "Want to turn to: " .. directionNames[dir] .. "Current Dir:" .. directionNames[movement.GetDir()])
     --read()
 
     local switch = {
@@ -217,7 +216,17 @@ function movement.MoveToPos(targetPos, doDig)
     local dig = doDig or false
 
     local diffVector =  targetPos - movement.GetPos()
-    display.Print("Move To: " .. targetPos:toString() .. " CurPos: " .. movement.GetPos():toString() .. " Dif: " .. diffVector:toString())
+    display.Print(movement.GetPos())
+    display.Print(diffVector)
+    display.Print(targetPos)
+    
+    local print = "Move To: "
+    print = print .. targetPos:toString()
+    print = print .. " CurPos: "
+    print = print .. movement.GetPos():toString()
+    print = print .. " Dif: "
+    print = print ..  diffVector:toString()
+    display.Print(print)
     --read()
 
     if diffVector.y ~= 0 then
@@ -329,6 +338,10 @@ end
 
 function movement.EnergyPercent()
     return (computer.energy()/computer.maxEnergy()) * 100
+end
+
+function movement.IsHome()
+    return (conf.homePos - movement.GetPos()):magnitudeSquared() < 1
 end
 
 function movement.GoHome(doDig)

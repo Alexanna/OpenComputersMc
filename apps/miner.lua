@@ -5,13 +5,14 @@ local sides = require("sides")
 local component = require("component")
 local robot = require("robot")
 local movement = require("movement")
+local event = require("event")
 --local excludeItems = require("excludeItems")
 
 require("vector3")
 
 local confFileName = "miningConfig"
 local printName = "MiningScript"
-
+local running = true
 
 local mining = {}
 
@@ -55,8 +56,10 @@ end
 
 function WriteConfFile()
  config.WriteConfFile(confFileName, conf, true)
- display.ProgressBarDecimal(printName .. ".Length","Mine Length: [" .. conf.currentTunnelLength:tostring() .. "]", "", conf.currentTunnelLength/conf.desiredTunnelLength, 0, conf.barWidth)
+ display.ProgressBarDecimal(printName .. ".Length","Mine Length: [" .. conf.currentTunnelLength .. "]", "", conf.currentTunnelLength/conf.desiredTunnelLength, 0, conf.barWidth/100.0)
  display.Write(printName .. ".BranchCount","Branch Count: " .. conf.currentBranchCount)
+ display.Write(printName .. ".Intersection","Intersection: " .. conf.intersectionPos:toString())
+ display.Write(printName .. ".MinePos","MinePos: " .. conf.minePos:toString())
 end
 
 function SetupConfig()
@@ -64,6 +67,8 @@ function SetupConfig()
  conf.intersectionPos = movement.GetPos()
  conf.minePos = movement.GetPos()
  conf = config.SetupConfig(confFileName, conf, false, true)
+ conf.minePos = Vector(conf.minePos.x,conf.minePos.y,conf.minePos.z)
+ conf.intersectionPos = Vector(conf.intersectionPos.x,conf.intersectionPos.y,conf.intersectionPos.z)
 end
 
 function Torch()
@@ -193,8 +198,6 @@ function EmptyInventory()
  end
 end
 
-
-
 function MoveToIntersection()
  UpdateStateText("Moving to Intersection")
  movement.MoveToPos(conf.intersectionPos)
@@ -205,7 +208,10 @@ function MoveHome()
  UpdateStateText("Going Home")
  WriteConfFile()
 
- MoveToIntersection()
+ if not movement.IsHome() then
+  MoveToIntersection()
+ end
+ 
  movement.GoHome()
 
  EmptyInventory()
@@ -228,7 +234,7 @@ function MoveHome()
   os.sleep(5)
  end
 
- movement.TurnDir(mineDirection)
+ movement.TurnDir(conf.mineDirection)
  
 end
 
@@ -270,7 +276,7 @@ function MineTunnel()
  display.Print( "Start tunnel")
  --read()
  
- while conf.currentTunnelLength < conf.desiredTunnelLength do
+ while running and conf.currentTunnelLength < conf.desiredTunnelLength do
   
   MineSingle()
   
@@ -314,16 +320,23 @@ function GoToNextIntersection()
  WriteConfFile()
 end
 
+function interruptListener()
+ display.PrintLn("interrupted", -1)
+ running = false
+end
+
 function MainLoop()
  UpdateStateText("Bootup")
  display.Print("Started Main Loop!")
 
+ event.register("interrupted", interruptListener)
+ 
  SetupConfig()
 
  display.Print("Ready")
  MoveHome()
  GoToMine()
- while true do
+ while running do
   MineTunnel()
   GoToNextIntersection()
  end
