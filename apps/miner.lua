@@ -71,7 +71,8 @@ function WriteConfFile()
   display.Write(printName .. ".ChunkLoader","Chunk Loader Not Installed")
  end
  
- display.ProgressBarDecimal(printName .. ".Length","Mine Length: [" .. conf.currentTunnelLength .. "]", "", conf.currentTunnelLength/conf.desiredTunnelLength, 0, conf.barWidth/100.0)
+ display.ProgressBarDecimal(printName .. ".Length","Mine Length: [" .. conf.currentTunnelLength .. "] [", "]", 
+         conf.currentTunnelLength/conf.desiredTunnelLength, 0, conf.barWidth/100.0)
  display.Write(printName .. ".BranchCount","Branch Count: " .. conf.currentBranchCount)
  display.Write(printName .. ".Intersection","Intersection: " .. conf.intersectionPos:toString())
  display.Write(printName .. ".MinePos","MinePos: " .. conf.minePos:toString())
@@ -215,6 +216,14 @@ function MoveToIntersection()
  movement.MoveToPos(conf.intersectionPos, true)
 end
 
+function CheckToolDurability()
+ local durability, current, max = robot.durability()
+ if durability == nil then
+  return true, 0
+ end
+ return current < 100, (current / max) * 100.0
+end
+
 function MoveHome()
  conf.currentState = stateEnum.GoHome
  UpdateStateText("Going Home")
@@ -244,6 +253,14 @@ function MoveHome()
  while movement.EnergyPercent() < 95 do
   UpdateStateText("Charging: " .. movement.EnergyPercent())
   os.sleep(5)
+ end
+
+
+ local isLow, percent = CheckToolDurability()
+ while isLow do
+  UpdateStateText("Tool Durability: " .. percent)
+  os.sleep(5)
+  isLow, percent = CheckToolDurability()
  end
 
  movement.TurnDir(conf.mineDirection)
@@ -292,9 +309,10 @@ function MineTunnel()
  while running and conf.currentTunnelLength < conf.desiredTunnelLength do
   
   MineSingle()
-  
-  if IsInventoryFull() or robot.count(conf.torchSlot) <= 1 then
-   display.Print("Inventory is full")
+
+  local isLow, percent = CheckToolDurability()
+  if IsInventoryFull() or robot.count(conf.torchSlot) <= 1 or isLow then
+   display.Print("InvFull/TorchLow/ToolDura")
    
    MoveHome()
    

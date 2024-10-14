@@ -84,7 +84,11 @@ function display.GetHeight()
     return height
 end
 
-function display.Write(name, data)
+function display.Write(name, data, clamp)
+    if clamp == nil then
+        clamp = true
+    end
+    
     local pos = nameToPos[name]
     if pos == nil then
         pos = count
@@ -95,8 +99,8 @@ function display.Write(name, data)
     term.clearLine()
     
     local output = tostring(data)
-    if output:len() >= width then
-        output = output:sub(1, width-1)
+    if clamp and #output >= display.GetWidth() then
+        output = output:sub(1, display.GetWidth()-2)
         output = output .. ".."
     end
     term.write(output)
@@ -140,17 +144,20 @@ function display.Read(data, default, offset)
     return input
 end
 
-function display.Print(data, offset)
+function display.Print(data, offset, clamp)
     if offset == nil then
         offset = 0
+    end
+    if clamp == nil then
+        clamp = true
     end
     
     term.setCursor(1, height - offset)
     term.clearLine()
 
     local output = tostring(data)
-    if output:len() >= width then
-        output = output:sub(1, width-3)
+    if clamp and #output >= display.GetWidth() then
+        output = output:sub(1, display.GetWidth()-2)
         output = output .. ".."
     end
     term.write(output)
@@ -212,7 +219,7 @@ function display.ProgressBarDecimal(name, frontText, endText, progressDecimal, l
 
     outputText = outputText .. endText
 
-    display.Write(name, outputText )
+    display.Write(name, outputText, false)
     
     return progressDecimal >= limitDecimal
 end
