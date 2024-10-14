@@ -324,9 +324,12 @@ function movement.GetRelativeNavPos()
     
     local x, y, z = navigation.getPosition()
     if x == nil then
-        debug.LogError("Move get nav pos: " .. y, 1)
+        display.Write(printName .. ".HasNavigation","Navigation out of range")
         return conf.currentPos
     end
+
+    display.Write(printName .. ".HasNavigation","Navigation Active")
+    
     return (Vector(x,y,z):floor()) - conf.homeNavOffset
 end
 
@@ -397,17 +400,19 @@ conf.currentPos = Vector(conf.currentPos.x, conf.currentPos.y, conf.currentPos.z
 conf.homePos = Vector(conf.homePos.x, conf.homePos.y, conf.homePos.z)
 conf.homeNavOffset = Vector(conf.homeNavOffset.x, conf.homeNavOffset.y, conf.homeNavOffset.z)
 
-if conf.useNav and firstSetup then
-    local points = navigation.findWaypoints(32)
-    for i,k in pairs(points) do
-        if i == "n" then
-            break
-        end
-        
-        if k.label == conf.homeWaypoint then
-            local x, y, z = navigation.getPosition()
-            conf.homeNavOffset = Vector(k.position[1], k.position[2], k.position[3]) + (Vector(x,y,z):floor())
-            break
+if conf.useNav then
+    if firstSetup then
+        local points = navigation.findWaypoints(32)
+        for i,k in pairs(points) do
+            if i == "n" then
+                break
+            end
+
+            if k.label == conf.homeWaypoint then
+                local x, y, z = navigation.getPosition()
+                conf.homeNavOffset = Vector(k.position[1], k.position[2], k.position[3]) + (Vector(x,y,z):floor())
+                break
+            end
         end
     end
     

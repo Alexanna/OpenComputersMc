@@ -93,7 +93,13 @@ function display.Write(name, data)
     end
     term.setCursor(1,pos)
     term.clearLine()
-    term.write(data)
+    
+    local output = tostring(data)
+    if output:len() >= width then
+        output = output:sub(1, width-1)
+        output = output .. ".."
+    end
+    term.write(output)
 end
 
 function display.Read(data, default, offset)
@@ -141,7 +147,13 @@ function display.Print(data, offset)
     
     term.setCursor(1, height - offset)
     term.clearLine()
-    term.write(tostring(data))
+
+    local output = tostring(data)
+    if output:len() >= width then
+        output = output:sub(1, width-3)
+        output = output .. ".."
+    end
+    term.write(output)
 end
 
 function display.PrintLn(data, offset)

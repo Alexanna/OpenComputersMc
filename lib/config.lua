@@ -20,7 +20,7 @@ function config.GetInput(displayTest, default)
 
     local value = display.Read(displayTest, default)
     
-    display.PrintLn("return value: [" ..  tostring(value) .. "]")
+    display.PrintLn(tostring(value))
     
     return value
 end

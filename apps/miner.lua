@@ -13,8 +13,10 @@ require("vector3")
 local confFileName = "miningConfig"
 local printName = "MiningScript"
 local running = true
-
 local mining = {}
+
+local chunkLoader = {}
+local hasChunkLoader = false;
 
 local navigation = {}
 local hasNavigation = false
@@ -24,7 +26,9 @@ if component.isAvailable("navigation") then
 end
 
 if component.isAvailable("chunkloader") then
- component.chunkloader.setActive(true)
+ hasChunkLoader = true
+ chunkLoader = component.chunkloader
+ chunkLoader.setActive(true)
 end
 
 local directionNames = { [0] = "down", 
@@ -60,6 +64,13 @@ end
 
 function WriteConfFile()
  config.WriteConfFile(confFileName, conf, true)
+
+ if hasChunkLoader then
+  display.Write(printName .. ".ChunkLoader","Chunk Loader Active: " .. chunkLoader.isActive())
+ else
+  display.Write(printName .. ".ChunkLoader","Chunk Loader Not Installed")
+ end
+ 
  display.ProgressBarDecimal(printName .. ".Length","Mine Length: [" .. conf.currentTunnelLength .. "]", "", conf.currentTunnelLength/conf.desiredTunnelLength, 0, conf.barWidth/100.0)
  display.Write(printName .. ".BranchCount","Branch Count: " .. conf.currentBranchCount)
  display.Write(printName .. ".Intersection","Intersection: " .. conf.intersectionPos:toString())
@@ -67,9 +78,6 @@ function WriteConfFile()
 end
 
 function SetupConfig()
- --display.Print("",1)
- conf.intersectionPos = Vector(movement.GetPos())
- conf.minePos = Vector(movement.GetPos())
  conf = config.SetupConfig(confFileName, conf, false, true)
  conf.minePos = Vector(conf.minePos.x,conf.minePos.y,conf.minePos.z)
  conf.intersectionPos = Vector(conf.intersectionPos.x,conf.intersectionPos.y,conf.intersectionPos.z)
@@ -204,7 +212,7 @@ end
 
 function MoveToIntersection()
  UpdateStateText("Moving to Intersection")
- movement.MoveToPos(conf.intersectionPos)
+ movement.MoveToPos(conf.intersectionPos, true)
 end
 
 function MoveHome()
@@ -314,7 +322,7 @@ function GoToNextIntersection()
   movement.TurnLeft()
  end
 
- conf.intersectionPos = Vector(movement.GetPos())
+ conf.intersectionPos = movement.GetPos()
  conf.intersectionPos = Vector(conf.intersectionPos.x, conf.intersectionPos.y, conf.intersectionPos.z)
  
  conf.currentBranchCount = conf.currentBranchCount + 1
@@ -340,11 +348,19 @@ function MainLoop()
  
  SetupConfig()
 
+ display.Clear()
  display.Print("Ready")
  MoveHome()
  GoToMine()
  while running do
-  MineTunnel()
+  if running then
+   MineTunnel()
+  end
+  
+  if running then
+   MoveHome()
+  end
+  
   if running then
    GoToNextIntersection()
   end
