@@ -66,7 +66,10 @@ function WriteConfFile()
  config.WriteConfFile(confFileName, conf, true)
 
  if hasChunkLoader then
-  display.Write(printName .. ".ChunkLoader","Chunk Loader Active: " .. chunkLoader.isActive())
+  if not chunkLoader.isActive() then
+   chunkLoader.setActive(true)
+  end
+  display.Write(printName .. ".ChunkLoader","Chunk Loader Active: " .. tostring(chunkLoader.isActive()))
  else
   display.Write(printName .. ".ChunkLoader","Chunk Loader Not Installed")
  end
@@ -217,11 +220,8 @@ function MoveToIntersection()
 end
 
 function CheckToolDurability()
- local durability, current, max = robot.durability()
- if durability == nil then
-  return true, 0
- end
- return current < 100, (current / max) * 100.0
+ local durability = robot.durability()
+ return durability < 0.1, math.floor(durability * 100)
 end
 
 function MoveHome()
@@ -277,7 +277,7 @@ function GoToMine()
  MoveToIntersection()
 
  UpdateStateText("Go To Mine")
- movement.MoveToPos(conf.minePos)
+ movement.MoveToPos(conf.minePos, true)
 end
 
 function MineSingle()
