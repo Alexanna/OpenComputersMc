@@ -8,6 +8,7 @@ local version = "0.1"
 
 local term = require("term")
 local colors = require("colors")
+local event = require("event")
 
 local skylight = {}
 
@@ -34,7 +35,11 @@ local prevBg = 0
 local posX = 1
 local posY = 1
 
-local curid = 1
+local curID = 1
+
+local cursorPosX, cursorPosY = 1, 1
+local active = false
+local buffer = {}
 
 local colorIndexToRBG = {
     [colors.white] = 0xe4e4e4 ,
@@ -55,18 +60,54 @@ local colorIndexToRBG = {
     [colors.black] = 0x181414
 }
 
-function skylight.CreateEntry(text, lambda, horizontal, itemType)
+function __key_down(eventName, keyboardAddress, char, code, playerName)
+    local max = 0
+    if code == 205 then --Right
+        cursorPosX = cursorPosX + 1    
+    elseif code == 203 then --Left
+        cursorPosX = cursorPosX - 1
+    elseif code == 200 then --Up
+        cursorPosY = cursorPosY - 1
+    elseif code == 208 then --Down
+        cursorPosY = cursorPosY + 1
+    elseif code == 28 then --Enter
+        active = true
+    end
+
+    if char > 0 then
+        table.insert(buffer, char)
+    end
+    
+
+    max = #positionArray
+    
+    if cursorPosY > max then
+        cursorPosY = 1
+    elseif cursorPosY < 1 then
+        cursorPosY = max
+    end
+
+    max = #(positionArray[cursorPosY])
+
+    if cursorPosX > max then
+        cursorPosX = 1
+    elseif cursorPosX < 1 then
+        cursorPosX = max
+    end
+end
+
+function skylight.CreateEntry(text, horizontal, lambda, itemType)
     if horizontal then
         posX = posX + 1
     else
         posY = posY + 1
         posX = 1
-        positionArray[posX] = {}
+        positionArray[posY] = {}
     end
 
-    positionArray[posY][posX] = curid
-    itemArray[curid] = { displayText = text, type = itemType, x = posX, y = posY, lambda = lambda}
-    curid = curid + 1
+    positionArray[posY][posX] = curID
+    itemArray[curID] = { displayText = text, type = itemType, x = posX, y = posY, lambda = lambda}
+    curID = curID + 1
 end
 
 function skylight.CreateLabel(text, horizontal)
@@ -97,58 +138,97 @@ end
 function skylight.New(newProgramName)
     posX = 1
     posY = 1
-    curid = 1
+    curID = 1
     positionArray = {}
     itemArray = {}
     term.clear()
-    term.write("SkyLight V" .. version .. " " .. newProgramName)
+    term.write(" SkyLight V" .. version .. "/" .. newProgramName)
 end
 
 function skylight.Draw()
+    local selected = false
+    local doActive = active
+    local temp = ""
+    
     for y, d1 in pairs(positionArray) do
         for x, id in pairs(d1) do
+            data = itemArray[id]
+            
             local width = math.floor((maxWidth - 2) * ((1.0) / #d1))
             local text = data.displayText;
 
-            term.setCursor(width * (x-1) + 2, y)
+            if y == cursorPosY and x == cursorPosX then
+                term.setCursor(width * (x-1) + 1, y)
+                term.gpu().setForeground(0)
+                term.gpu().setBackground(1)
+                term.write(">", false)
+                term.gpu().setForeground(1)
+                term.gpu().setBackground(0)
+                selected = true
+            else
+                selected = false
+            end
             
-            data = itemArray[id]
+            term.setCursor(width * (x-1) + 2, y)
             
             if data.type == type.label then
             elseif data.type == type.button then
                 text = "[" .. text .. "]"
+
+                if selected and doActive then
+                    data.lambda()
+                end
             elseif data.type == type.bar then
                 text = text .. "{"
                 
-                local len = math.max(width - string.len(text) - 1, 4)
+                local len = math.max(width - string.len(text) - 2, 4)
                 
                 local progress = data.lambda()
                 for i = 1, len do
                     if (i / len) < progress then
-                        text = text .. "■"
+                        text = text .. "="
                     else
                         text = text .. " "
                     end
                 end
                 text = text .. "}"
             elseif data.type == type.dynamicText then
-                text = text .. data.lambda
+                text = text .. data.lambda()
             elseif data.type == type.textBox then
                 text = text .. "<"
-                local len = math.max(width - string.len(text) - 1, 4)
-
-                for i = 1, len do
+                temp = ""
+                
+                if selected then
+                    
+                    for i, j in buffer do
+                        temp = temp + string.char(j)
+                    end 
+                    buffer = {}
+                end
+                
+                temp = data.lambda(temp, selected and doActive)
+                
+                text = text + temp
+                
+                local len = math.max(width - string.len(text) - 2, 2)
+                
+                for _ = 1, len do
                     text = text .. " "
                 end
                 text = text .. ">"
             end
 
             if string.len(text) > width then
-                text = string.sub(width)
+                Log("SkyL", "Overflow: " .. string.len(text) .. ":" .. width .. text)
+                text = string.sub(text,1, width)
             end
             
             term.write(text, false)
         end
+    end
+
+    if active and doActive then
+        active = false
     end
 end
 

@@ -23,17 +23,21 @@ end
 
 local inputText = ""
 
-function TextBox(text)
-    inputText = text
+function TextBox(text, enter)
+    if string.len(text) > 0 then
+        inputText = text    
+    end
+    
+    return inputText
 end
 
 local button1Pressed = false
-function Button1(pressed)
-    button1Pressed = pressed
+function Button1()
+    button1Pressed = not button1Pressed
 end
 
 function ButtonState()
-    return button1Pressed
+    return tostring(button1Pressed)
 end
 
 function CreateSkylight()
@@ -55,7 +59,7 @@ function CreateSkylight()
     skylight.CreateDynamicText("Echo: ", (function() return inputText end))
     skylight.CreateButton("Button1", Button1, true)
     skylight.CreateDynamicText("Echo: ", ButtonState)
-    skylight.CreateButton("Stop", (function(pressed) if pressed then running = false end end))
+    skylight.CreateButton("Stop", (function() running = false end))
 end
 
 CreateSkylight()
