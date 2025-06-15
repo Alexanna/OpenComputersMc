@@ -1,5 +1,5 @@
 local component = require("component")
-local rsi = component.block_refinedstorage_cable
+local rsi = component.block_refinedstorage_interface
 
 local running = true
 
@@ -27,7 +27,7 @@ end
 
 function refinedStorage.CanCraft(item, count)
     local result = refinedStorage.Craft(item, count, false)
-    if #result.missing > 0 and #result.missingFluids > 0 then
+    if #result.missing <= 0 and #result.missingFluids <= 0 then
         return true
     else
         return false, result
@@ -69,8 +69,13 @@ function refinedStorage.ExtractItem(item, count, stackSize, direction)
         inStorage = refinedStorage.GetCount(item)
         --display.Write(printName .. ".ExtractItem", "Extracting: \"" .. refinedStorage.PrintItem(item) .. "\" Count: " .. tostring(count - (loops * stackSize)) .. " In Stock: " .. tostring(inStorage))
     end
-    rsi.extractItem(item, math.fmod(count, stackSize), direction)
-    inStorage = refinedStorage.GetCount(item)
+    local remaining = math.fmod(count, stackSize)
+
+    if remaining > 0 then
+        rsi.extractItem(item, remaining, direction) 
+    end
+    
+    --inStorage = refinedStorage.GetCount(item)
     --display.Write(printName .. ".ExtractItem", "Extracted: \"" .. refinedStorage.PrintItem(item) .. "\" Count: " .. tostring(count) .. " In Stock: " .. tostring(inStorage))
 end
 

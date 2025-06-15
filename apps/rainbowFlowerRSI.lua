@@ -1,6 +1,6 @@
 local colors = require("colors")
 local config = require("config")
-local display = require("skylight")
+local skylight = require("skylight")
 local debug = require("debug")
 local sides = require("sides")
 local component = require("component")
@@ -11,6 +11,7 @@ local rs = component.redstone
 local version = "0.1"
 local programName = "Rainbow Flower Advanced"
 local progNameS = "rainbow"
+local confFileName = "RainbowRsiConf"
 
 local colorsNice = {
     "White  ",
@@ -82,16 +83,31 @@ end
 function CreateSkylight()
     skylight.New(programName .. " V" .. version)
     skylight.CreateProgressBar("Mana", ReadManaLevel, false)
-    for i = 0, 15 do
-        skylight.CreateDynamicText("", (function() return WoolText(i) end), math.fmod(i, 2) == 0)    
-    end
+    
+    skylight.CreateDynamicText("", (function() return WoolText(0) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(1) end), false)
+    skylight.CreateDynamicText("", (function() return WoolText(2) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(3) end), false)
+    skylight.CreateDynamicText("", (function() return WoolText(4) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(5) end), false)
+    skylight.CreateDynamicText("", (function() return WoolText(6) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(7) end), false)
+    skylight.CreateDynamicText("", (function() return WoolText(8) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(9) end), false)
+    skylight.CreateDynamicText("", (function() return WoolText(10) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(11) end), false)
+    skylight.CreateDynamicText("", (function() return WoolText(12) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(13) end), false)
+    skylight.CreateDynamicText("", (function() return WoolText(14) end), true)
+    skylight.CreateDynamicText("", (function() return WoolText(15) end), false)
+    
     skylight.CreateButton("Stop", (function() running = false end))
 end
 
 function CraftWool(index) 
     local count = ReadWoolLevel(index)
     if count < 64 then
-        rsi.DoCraft(GetRsiItem(index), count - 64)
+        rsi.DoCraft(GetRsiItem(index), 64 - count)
     end
 end
 
